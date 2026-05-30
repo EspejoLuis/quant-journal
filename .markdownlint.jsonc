@@ -1,0 +1,7 @@
+{
+  // Allows inline tags like #exploring, #anki without a space after #
+  "MD018": false,
+
+  // Removes the 80-character line length limit (too restrictive for journal entries)
+  "MD013": false
+}
