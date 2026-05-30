@@ -1,0 +1,58 @@
+{
+  "Coding Section": {
+    "scope": "markdown",
+    "prefix": "sec-coding",
+    "body": [
+      "## 👨🏾‍💻 Coding",
+      "",
+      "- $0",
+      "",
+      "#coding",
+      "",
+      "---"
+    ],
+    "description": "Daily log coding section"
+  },
+  "Anki Section": {
+    "scope": "markdown",
+    "prefix": "sec-anki",
+    "body": [
+      "## 📚 Anki",
+      "",
+      "- $0",
+      "",
+      "#anki",
+      "",
+      "---"
+    ],
+    "description": "Daily log Anki section"
+  },
+  "Exploring Section": {
+    "scope": "markdown",
+    "prefix": "sec-exploring",
+    "body": [
+      "## 🧭 Exploring",
+      "",
+      "- $0",
+      "",
+      "#exploring",
+      "",
+      "---"
+    ],
+    "description": "Daily log exploring section"
+  },
+  "Next Section": {
+    "scope": "markdown",
+    "prefix": "sec-next",
+    "body": [
+      "## ❓ Next",
+      "",
+      "- $0",
+      "",
+      "#next",
+      "",
+      "---"
+    ],
+    "description": "Daily log next/todo section"
+  }
+}

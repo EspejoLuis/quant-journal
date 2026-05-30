@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "New Daily Log",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/new-daily-log.sh",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
