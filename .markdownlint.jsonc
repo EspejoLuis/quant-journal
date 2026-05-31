@@ -3,5 +3,8 @@
   "MD018": false,
 
   // Removes the 80-character line length limit (too restrictive for journal entries)
-  "MD013": false
+  "MD013": false,
+
+  // Allow frontmatter title + H1 heading to coexist (frontmatter title is for Foam graph labels)
+  "MD025": { "front_matter_title": "" }
 }
