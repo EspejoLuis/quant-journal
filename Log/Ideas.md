@@ -1,3 +1,6 @@
+---
+type: index
+---
 # ❓ Ideas
 
 - [ ] [[05-28-2026#❓ Next|Volatility Models (Local/Stochastic/Stochastic Local)]]

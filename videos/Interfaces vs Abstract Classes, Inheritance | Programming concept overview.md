@@ -1,12 +1,17 @@
+---
+type: video
+---
 # Interfaces vs Abstract Classes, Inheritance | Programming concept overview
 
-[Youtube Link](https://youtu.be/5rs39FxBdcs?si=x-jDcD7tAcouCUF1)
+---
 
-## Summary
+## 📝 Summary
 
-Descrition of the difference between abstract and interface
+[Youtube Video](https://youtu.be/5rs39FxBdcs?si=x-jDcD7tAcouCUF1) that describes the difference between abstract classes/methods and interface.
 
-## Key Ideas
+---
+
+## 🔑 Key Points
 
 - Common to most programming languages.
 - Abstract Class
@@ -63,3 +68,5 @@ Descrition of the difference between abstract and interface
         }
     }
     ```
+
+---
