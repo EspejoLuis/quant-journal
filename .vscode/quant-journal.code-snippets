@@ -54,5 +54,21 @@
       "---"
     ],
     "description": "Daily log next/todo section"
+  },
+
+  "Key Points Section": {
+    "scope": "markdown",
+    "prefix": "sec-key",
+    "body": [
+      "## 🔑 Key Points",
+      "",
+      "- $0",
+      "",
+      "#next",
+      "",
+      "---"
+    ],
+    "description": "Key Point"
   }
+  
 }
