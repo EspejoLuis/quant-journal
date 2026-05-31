@@ -1,4 +1,17 @@
 {
+  // Markdown Preview Enhanced also handles [[wiki links]] by default, resolving them
+  // relative to the current file's directory. This conflicts with Foam (which searches
+  // the whole workspace) and causes Cmd+click to create a new file in the current folder
+  // instead of opening the existing note. It also produces a double hover preview.
+  "markdown-preview-enhanced.enableWikiLinkSyntax": false,
+
+  // Fallback style for when VS Code restores a previously open graph panel across sessions
+  // (deserializeWebviewPanel path). That path skips foam.graph.views entirely and reads only
+  // this setting, so without it the graph defaults to coloring by type.
+  "foam.graph.style": {
+    "colorMode": "directory"
+  },
+
   "foam.graph.views": [
     {
       "name": "Default",
