@@ -1,4 +1,5 @@
 ---
+title: Simple Math's Finance
 type: book
 ---
 
