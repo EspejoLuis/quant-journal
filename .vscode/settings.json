@@ -11,7 +11,7 @@
   "foam.graph.style": {
     "colorMode": "directory"
   },
-
+  "foam.edit.linkReferenceDefinitions": "withExtensions",
   "foam.graph.views": [
     {
       "name": "Default",
