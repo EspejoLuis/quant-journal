@@ -7,7 +7,7 @@ type: video
 
 ## 📝 Summary
 
-[Youtube Video](https://youtu.be/5rs39FxBdcs?si=x-jDcD7tAcouCUF1) that describes the difference between abstract classes/methods and interface.
+[Youtube Video](https://youtu.be/5rs39FxBdcs?si=x-jDcD7tAcouCUF1) that describes the difference between abstract classes/methods and interfaces.
 
 ---
 
@@ -16,7 +16,7 @@ type: video
 - Common to most programming languages.
 - Abstract Class
   - "**HAS-A**" relationship. Subclasses are somehow related.
-  - The term "abstract" class means something not tangigble so it cannot be instantiated.
+  - The term "abstract" class means something not tangible so it cannot be instantiated.
   - Example:
 
     ```c#
