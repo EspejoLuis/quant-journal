@@ -1,0 +1,14 @@
+{
+  "foam.graph.views": [
+    {
+      "name": "Default",
+      "colorBy": "directory",
+      "show": {
+        "tag": { "enabled": true },
+        "attachment": { "enabled": false },
+        "image": { "enabled": false },
+        "placeholder": { "enabled": true }
+      }
+    }
+  ]
+}
