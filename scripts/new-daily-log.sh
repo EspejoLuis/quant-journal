@@ -19,7 +19,9 @@ FILE="$LOG_DIR/$MONTH-$DAY-$YEAR.md"
 mkdir -p "$LOG_DIR"
 
 if [ ! -f "$FILE" ]; then
-  printf "# ☀️ %s%s %s %s - %s\n\n" "$DAY_NUM" "$SUFFIX" "$MONTH_NAME" "$YEAR" "$DAY_NAME" > "$FILE"
+  printf -- "---\ntitle: ☀️ %s %s %s\ntype: log\n---\n# ☀️ %s%s %s %s - %s\n\n" \
+    "$DAY_NUM" "$MONTH_NAME" "$YEAR" \
+    "$DAY_NUM" "$SUFFIX" "$MONTH_NAME" "$YEAR" "$DAY_NAME" > "$FILE"
 fi
 
-code "$FILE"
+open -a "Visual Studio Code" "$FILE"
