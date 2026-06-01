@@ -1,5 +1,6 @@
 {
   "version": "2.0.0",
+  // Keybinding: Ctrl+Shift+Alt+L -> runs "New Daily Log" (set in keybindings.json)
   "tasks": [
     {
       "label": "New Daily Log",
