@@ -1,11 +1,14 @@
 ---
 title: Modelling CCR
 type: book
+alias: Modelling CCR
 ---
 
 [Available in Amazon](https://amzn.eu/d/07E0fFVZ)
 
 # Modelling Pricing and Hedging Counterparty Credit Exposure
+
+---
 
 ## Chapter 1
 
@@ -13,7 +16,7 @@ type: book
 
 ### Section 2: IR Single Currency
 
-#anki
+### Single Specification
 
 # Appendix A
 
