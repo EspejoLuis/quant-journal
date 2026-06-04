@@ -10,6 +10,8 @@ A personal quant self-study journal. It combines:
 
 **Claude's role here:** help me understand theory, review my C++ implementations, check my math, suggest test cases, explain QuantLib APIs, and discuss trade-offs. Do not write full implementations for me unless I explicitly ask.
 
+- Since I'm also reviewing [[Modern-Computational-Finance-AAD-and-Parallel-Simulations]], integrate points from there into the study/planning session. For example, use concepts of threading, mutex, atomic and all the concepts for C++ you find there.
+
 ---
 
 ## Learning Mode
@@ -31,25 +33,23 @@ The goal is that I understand what I built, not just that the code works.
 
 ---
 
-## Setup
-
-From here onwards, there's a description of the structure. If more thing are to be added they will be added. Basically the plan could change.
-
----
-
 ## C++ Conventions
 
 All code lives under `code/cpp/`.
 
 Two shared header-only engines are built incrementally:
 
-**`code/cpp/mc_engine.h`** — Monte Carlo path generators:
+**`code/cpp/mc_engine.h`** — Monte Carlo path generators.
 Added one function per model as study progresses:
 
 - GBM path (Black-Scholes, flat vol) — engine week
 - Local vol path — σ(S,t) looked up via bilinear interpolation at each Euler step
 - Heston path — Euler-Milstein on (S,v) pair with variance reflection
 - SLV path — Heston variance multiplied by leverage function L(S,t)
+
+**RNG options to consider:** Mersenne Twister (`std::mt19937`) for pseudo-random; Sobol sequences for quasi-Monte Carlo (lower discrepancy, faster convergence).
+
+**Variance reduction techniques to integrate:** antithetic variates, control variates, importance sampling.
 
 **`code/cpp/pde_engine.h`** — Finite-difference solvers:
 
@@ -92,7 +92,7 @@ g++ -std=c++17 <file>.cpp -o out && ./out
 
 ### Track 1 — Volatility Models
 
-#### Week 1 — Thu Jun 5–7: Engine Foundations
+#### Week 1 — Jun 5–7: Engine Foundations
 
 Build the two shared headers from scratch.
 
@@ -100,7 +100,13 @@ Build the two shared headers from scratch.
 - `pde_engine.h`: 1D Crank-Nicolson solver. Solve the BS PDE backward in time from the call payoff at maturity.
 - Verify both against BS closed-form. If both agree to < 0.5%, the engines are correct.
 
-No note this week — pure infrastructure.
+**RNG this week:** use `std::mt19937` seeded with `std::random_device`. Understand why the seed matters for reproducibility.
+
+**Variance reduction this week:** implement antithetic variates in the GBM pricer — for each path drawn with Z, also price with −Z. Check that it reduces standard error for the same number of paths.
+
+**From the book:** structure `mc_engine.h` with parallelism in mind from the start. Each path is independent — think about what that means for thread safety before adding `std::thread` later.
+
+Note about PDE will be needed!
 
 ---
 
@@ -121,6 +127,8 @@ Code: `code/cpp/models/local_vol.cpp`
 - Extend `mc_engine.h` with `simulate_local_vol_path` — bilinear interpolation on a discrete σ(S,t) grid at each Euler step
 - In `local_vol.cpp`: build a toy skewed vol surface, run MC, run 1D PDE, compare to QuantLib
 
+**Variance reduction this week:** add control variates — use the BS flat-vol price as the control. The local vol price should be close to it; the control variate removes the common variance.
+
 **QuantLib:** `BlackVarianceSurface`, `LocalVolSurface`, `GeneralizedBlackScholesProcess`
 
 ---
@@ -140,9 +148,13 @@ Code: `code/cpp/models/heston.cpp`
 
 **C++:**
 
-- Extend `mc_engine.h` with `simulate_heston_path` using Euler-Milstein. If v_t goes negative, reflect: v_t ← |v_t|
+- Extend `mc_engine.h` with `simulate_heston_path` using Euler and Milstein. If v_t goes negative, reflect: v_t ← |v_t|
 - Extend `pde_engine.h` with 2D Craig-Sneyd ADI on a (S,v) grid (~100×50 nodes). Splits the 2D step into two 1D tridiagonal solves per time step
 - In `heston.cpp`: implement the characteristic function pricer as baseline, compare MC and ADI PDE against QuantLib
+
+**RNG upgrade this week:** swap `std::mt19937` for Sobol sequences and compare convergence. Quasi-MC converges as O(1/N) vs O(1/√N) for standard MC — you should see it clearly in a convergence plot.
+
+**From the book:** parallelize the Heston MC using `std::thread`. Each thread gets its own RNG state (never share an RNG across threads). Use `std::atomic<double>` or a mutex to accumulate results safely. Compare wall-clock time with 1, 2, 4 threads.
 
 **QuantLib:** `HestonModel`, `HestonProcess`, `AnalyticHestonEngine`, `FdHestonVanillaEngine`
 
@@ -165,6 +177,10 @@ Code: `code/cpp/models/slv.cpp`
 
 - Extend `mc_engine.h` with `simulate_slv_path` — pre-computed L(S,t) grid, looked up at each step
 - In `slv.cpp`: demo the calibration loop. Start with L=1 (pure Heston), run paths, estimate E[v|S], update L, iterate to convergence
+
+**Variance reduction this week:** importance sampling — shift the drift to concentrate paths near the region of interest (e.g. near the barrier for barrier products). Requires a Radon-Nikodym weight per path.
+
+**From the book:** the particle method calibration loop is embarrassingly parallel up to the binning step. Use a thread pool pattern to simulate the ensemble, then synchronise at the binning step with a mutex.
 
 **QuantLib:** `HestonSLVProcess`, `HestonSLVFokkerPlanckFdmEngine`
 
@@ -245,7 +261,8 @@ Code: `code/cpp/products/autocallable.cpp` | Needs: SLV
 
 **Theory:** periodic autocall schedule (knock-out coupon if S > autocall level); barrier protection at maturity; memory coupon feature. Needs SLV because it is sensitive to both the marginal distribution (local vol) and the forward dynamics (stochastic vol).
 **C++:** SLV MC with per-observation-date autocall and barrier checks. PDE is 2D ADI with Bermudan backward induction — at each observation date replace continuation value with autocall payoff where triggered.
-**QuantLib:** `FdHestonBarrierEngine` + custom payoff as rough benchmark. Compute full Greeks: delta, vega, theta, barrier digital risk.
+**From the book:** compute Greeks (delta, vega, theta, barrier digital risk) using AAD — bump-and-reprice is too slow for a full Greek surface on a path-dependent product. AAD gives all Greeks in roughly the same time as one price.
+**QuantLib:** `FdHestonBarrierEngine` + custom payoff as rough benchmark.
 
 ---
 
@@ -264,3 +281,6 @@ Each note in `notes/models/` or `notes/products/` must contain:
 - YAML frontmatter: `type`, `category`, `tags`, `related`, `status`
 - Wikilinks `[[note-name]]` for Foam graph
 - `#tag` at the bottom for Foam filtering
+
+
+[Modern-Computational-Finance-AAD-and-Parallel-Simulations]: books/Modern-Computational-Finance-AAD-and-Parallel-Simulations.md "AAD and // Simulation"
