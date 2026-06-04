@@ -1,7 +1,7 @@
 ---
 title: AAD and // Simulation
 type: book
-alias: [AAD]
+alias: AAD
 ---
 
 [Available in Amazon](https://amzn.eu/d/07TqCXwI)
