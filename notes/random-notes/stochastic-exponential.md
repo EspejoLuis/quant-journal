@@ -2,33 +2,39 @@
 
 ## How to get there?
 
-1. We are starting from a Brownian motion $W_t$
-2. Define a function $e^{W_t}$
-3. Itô's lemma tells us that:
+**1.** We are starting from a Brownian motion $W_t$
 
-   $$
-   df(x) = f'(x) \, dx + \frac{1}{2} f''(x)(dx)^2
-   $$
+**2.** Define a function $e^{W_t}$
 
-   In our case $f'(x) = e^{x}$ and $f''(x) = e^{x}$, so:
+**3.** Itô's lemma tells us that:
 
-   $$
-   de^{W_t} = e^{W_t} \, dW_t + \frac{1}{2} e^{W_t} \, dt
-   $$
+$$
+df(x) = f'(x) \, dx + \frac{1}{2} f''(x)(dx)^2
+$$
 
-4. $e^{W_t}$ is **not** a martingale because of the positive $dt$ drift term.
-5. To remove the drift, define $X_t = W_t - \frac{1}{2}t$, so $dX_t = dW_t - \frac{1}{2} \, dt$.
-6. Apply Itô's lemma to $e^{X_t}$ with $f'(x) = f''(x) = e^x$:
+In our case $f'(x) = e^{x}$ and $f''(x) = e^{x}$, so:
 
-   $$
-   de^{X_t} = e^{X_t} \, dX_t + \frac{1}{2} e^{X_t} \, dt
-            = e^{X_t} \left(dW_t - \frac{1}{2} \, dt\right) + \frac{1}{2} e^{X_t} \, dt
-            = e^{X_t} \, dW_t
-   $$
+$$
+de^{W_t} = e^{W_t} \, dW_t + \frac{1}{2} e^{W_t} \, dt
+$$
 
-   The $dt$ terms cancel exactly.
-7. $e^{W_t - \frac{1}{2}t}$ is a martingale because there is no drift term.
-8. Let $Z_t = e^{X_t} = e^{W_t - \frac{1}{2}t}$. Then $dZ_t = Z_t \, dW_t$ and $Z_0 = e^{W_0 - 0} = 1$.
+**4.** $e^{W_t}$ is **not** a martingale because of the positive $dt$ drift term.
+
+**5.** To remove the drift, define $X_t = W_t - \frac{1}{2}t$, so $dX_t = dW_t - \frac{1}{2} \, dt$.
+
+**6.** Apply Itô's lemma to $e^{X_t}$ with $f'(x) = f''(x) = e^x$:
+
+$$
+de^{X_t} = e^{X_t} \, dX_t + \frac{1}{2} e^{X_t} \, dt
+         = e^{X_t} \left(dW_t - \frac{1}{2} \, dt\right) + \frac{1}{2} e^{X_t} \, dt
+         = e^{X_t} \, dW_t
+$$
+
+The $dt$ terms cancel exactly.
+
+**7.** $e^{W_t - \frac{1}{2}t}$ is a martingale because there is no drift term.
+
+**8.** Let $Z_t = e^{X_t} = e^{W_t - \frac{1}{2}t}$. Then $dZ_t = Z_t \, dW_t$ and $Z_0 = e^{W_0 - 0} = 1$.
 
 ## Doléans-Dade exponential
 
