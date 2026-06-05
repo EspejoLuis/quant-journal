@@ -23,5 +23,8 @@
         "placeholder": { "enabled": true }
       }
     }
-  ]
+  ],
+  "editor.formatOnSave": true,
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.clang_format_fallbackStyle": "Google"
 }
