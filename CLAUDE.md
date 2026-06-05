@@ -16,7 +16,9 @@ A personal quant self-study journal. It combines:
 
 ## Learning Mode
 
-When I say "learning mode on", switch to tutor behaviour:
+Learning mode is **on by default**. Only switch it off when I explicitly say "learning mode off".
+
+Tutor behaviour:
 
 - Ask me what I think before explaining anything.
 - Let me attempt the implementation first, then correct or validate.
@@ -36,16 +38,140 @@ The goal is that I understand what I built, not just that the code works.
 ## C++ Conventions
 
 All code lives under `code/cpp/`.
+Follow the [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines) throughout.
 
-Two shared header-only engines are built incrementally:
+### Naming (NL.8, NL.9)
 
-**`code/cpp/mc_engine.h`** — Monte Carlo path generators.
-Added one function per model as study progresses:
+Follows QuantLib convention, which does not conflict with any C++ Core Guidelines hard rule.
+NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are met.
 
-- GBM path (Black-Scholes, flat vol) — engine week
-- Local vol path — σ(S,t) looked up via bilinear interpolation at each Euler step
-- Heston path — Euler-Milstein on (S,v) pair with variance reflection
-- SLV path — Heston variance multiplied by leverage function L(S,t)
+| Thing | Convention | Example |
+|-------|-----------|---------|
+| Files | `lowerCamelCase`, `.h` / `.cpp` | `mcEngine.h`, `barrier.cpp` |
+| Types (class, struct, enum) | `UpperCamelCase` | `class GbmPath` |
+| Functions | `lowerCamelCase` | `simulateGbmPath()` |
+| Variables | `lowerCamelCase` (or short math names) | `spotPrice`, `S0`, `sigma` |
+| Class data members | `lowerCamelCase_` (trailing underscore) | `numSteps_` |
+| Constants (`constexpr`) | `lowerCamelCase` | `defaultNumPaths` |
+| Namespaces | `lowerCamelCase` | `namespace mcEngine` |
+| Macros | `ALL_CAPS` — avoid; use `constexpr` instead | |
+
+### Formatting (NL.4, NL.17)
+
+- **Indentation:** 4 spaces. No tabs. (NL.4 — maintain a consistent indentation style)
+- **Line length:** 80 characters max.
+- **Braces:** K&R style — opening brace on the same line. (NL.17)
+
+  ```cpp
+  if (condition) {
+      do_something();
+  }
+  ```
+
+- **Spaces:** around binary operators, after commas, after keywords (`if`, `for`, `while`).
+- One statement per line. No trailing whitespace.
+
+### Header Files (SF.1, SF.8)
+
+- Use `#pragma once` at the top of every `.h` file.
+- Include order (one blank line between groups):
+  1. Related `.h` for this `.cpp`
+  2. C system headers (`<cmath>`, `<cstdlib>`)
+  3. C++ standard library (`<vector>`, `<thread>`)
+  4. Third-party headers (QuantLib)
+  5. Project headers (`"mc_engine.h"`)
+- Use angle brackets for system/third-party, quotes for project headers.
+
+### Core Guidelines rules in force
+
+#### Philosophy (P)
+
+- **P.8** — Don't leak resources. Use RAII: `std::vector` for paths and grids, `std::unique_ptr` for owned heap objects.
+- **P.9** — Don't waste time or space. Avoid unnecessary copies and allocations inside simulation loops.
+- **P.10** — Prefer immutable data. Inputs to path generators (`s0`, `r`, `sigma`) should always be `const`.
+
+#### Functions (F)
+
+- **F.2** — One function = one logical operation. `simulateGbmPath` simulates a path; it does not also compute the payoff.
+- **F.3** — Keep functions short and simple. If a function needs a comment to explain its own structure, split it.
+- **F.6** — Mark `noexcept` on path generators and payoff functions. They must not throw inside a simulation loop.
+- **F.8** — Prefer pure functions. Path generators should be pure functions of their inputs — same seed → same path, no hidden state.
+- **F.16** — Pass `double`, `int` by value; pass `std::vector` and grid objects by `const&`.
+- **F.20** — Prefer return values over output parameters. Return `std::vector<double>` rather than filling a pointer.
+- **F.21** — Return multiple values as a `struct`. Example: a Heston step returning `{s_new, v_new}`.
+
+#### Interfaces (I)
+
+- **I.2** — No non-`const` global variables. All shared state must be passed explicitly or owned by a class.
+- **I.5 / I.6** — State preconditions with `Expects()` or `assert`. Example: `assert(sigma > 0.0)` at the top of every path generator.
+- **I.11** — Never transfer ownership via a raw pointer. Return by value or use `std::unique_ptr`.
+- **I.13** — Don't pass arrays as `double* arr, int n`. Use `std::span<double>` or `std::vector<double>&`.
+- **I.23** — Keep the number of function arguments low. Bundle related model parameters into a config struct:
+
+  ```cpp
+  struct HestonParams { double v0, kappa, theta, xi, rho; };
+  ```
+
+#### Constants and immutability (Con)
+
+- **Con.1** — `const` on every variable that is not updated after initialisation.
+- **Con.4** — `constexpr` for all compile-time constants. Never `#define` for numbers.
+
+#### Resource management (R)
+
+- **R.11** — No raw `new`/`delete`. Use `std::make_unique` or `std::vector`.
+- **R.20** — `std::unique_ptr` for exclusive ownership; `std::shared_ptr` only when shared ownership is genuinely needed.
+
+#### Concurrency (CP) — active from Heston week onward
+
+- **CP.1** — Design path generators to be thread-safe by being stateless: inputs in, path out, nothing shared.
+- **CP.8** — Use `std::atomic<double>` for simple shared accumulators. Use `std::mutex` with `std::lock_guard` for compound updates.
+- **CP.20** — Never share an RNG across threads. Each `std::thread` gets its own seeded `std::mt19937`.
+
+#### Error handling
+
+- The Core Guidelines recommend exceptions (I.10), but this codebase avoids them for predictability in numerical loops. Use `assert` / `Expects()` for preconditions. Document this at the top of each engine file.
+
+### Testing
+
+- **Framework:** Catch2 (header-only, no build setup required).
+- **Rule:** every function gets a test file before or immediately after implementation. No exceptions.
+- **Unit tests:** verify the function in isolation — known inputs, expected outputs.
+- **Integration tests:** run the full pricer and compare against a closed-form or QuantLib benchmark (tolerance < 0.5%).
+- Test files live alongside the source: `monteCarloEngine.test.cpp`, `barrier.test.cpp`, etc.
+
+### Comments (NL.1, NL.2)
+
+- Use `//` for all inline and block comments.
+- File header comment (top of every file):
+
+  ```cpp
+  // mc_engine.h — Monte Carlo path generators.
+  // Grows one function per study block; see CLAUDE.md for the plan.
+  ```
+
+- Function comment above the declaration (what it does, not how):
+
+  ```cpp
+  // Returns daily prices for a single GBM path of length n_steps.
+  std::vector<double> simulateGbmPath(...);
+  ```
+
+- No redundant comments — if the name explains it, skip the comment.
+
+### Engines and file structure
+
+Two shared header-only engines are built incrementally — one function at a time, only when a product actually needs it:
+
+**`code/cpp/mc_engine.h`** — Monte Carlo path generators and pricers.
+Grows one function per block:
+
+- `simulateGbmPath()` — GBM (flat vol, Black-Scholes world)
+- `simulateLocalVolPath()` — σ(S,t) surface, bilinear interpolation at each Euler step
+- `simulateHestonPath()` — Euler-Milstein on (S,v) pair with variance reflection
+- `simulateSlvPath()` — Heston variance multiplied by leverage function L(S,t)
+- `simulateCorrelatedGbmPath()` — 2-asset GBM via Cholesky decomposition
+- `priceLsm()` — Longstaff-Schwartz American MC; regress continuation value on basis functions at each exercise date, work backward to find optimal stopping
 
 **RNG options to consider:** Mersenne Twister (`std::mt19937`) for pseudo-random; Sobol sequences for quasi-Monte Carlo (lower discrepancy, faster convergence).
 
@@ -56,84 +182,261 @@ Added one function per model as study progresses:
 - 1D Crank-Nicolson with Thomas algorithm (tridiagonal solve)
 - 2D Craig-Sneyd ADI for the Heston/SLV PDE in (S,v)
 
-**Model and product files** are standalone `.cpp` files that `#include` the two headers above and nothing else. Each compiles and runs with:
+**Model and product files** are standalone `.cc` files that `#include` the two headers above and nothing else. Each compiles and runs with:
 
 ```bash
-g++ -std=c++17 <file>.cpp -o out && ./out
+g++ -std=c++17 <file>.cc -o out && ./out
 ```
 
 ---
 
 ## Active Study Plan
 
-### Track 1 — Volatility Models (~10 weeks, starting Thu Jun 5 2026)
+The plan is incremental: each block extends the engine by one capability, then immediately uses it for one or more products. Nothing is built speculatively — every engine function earns its place by pricing something.
 
-| # | Model | Note | Code | Status |
-|---|-------|------|------|--------|
-| 1 | Local Volatility (Dupire) | `notes/models/local-volatility.md` | `code/cpp/models/local_vol.cpp` | [ ] |
-| 2 | Heston Model | `notes/models/heston-model.md` | `code/cpp/models/heston.cpp` | [ ] |
-| 3 | Stochastic Local Vol (SLV) | `notes/models/stochastic-local-vol.md` | `code/cpp/models/slv.cpp` | [ ] |
+### Product checklist
 
-### Track 2 — Exotic Products (~19 weeks, starting ~Aug 2026)
+| # | Product | Block | Needs | MC pricing | Status |
+|---|---------|-------|-------|------------|--------|
+| — | Engine seed (GBM + 1D CN) | A | — | — | [ ] |
+| 1 | Digital Option | A | GBM | European only | [ ] |
+| 2 | Chooser Option | A | GBM | European only | [ ] |
+| 3 | Asian Option | A | GBM + path avg | European + LSM (American Asian) | [ ] |
+| 4 | Barrier Option | A | GBM + barrier check | European + LSM (American barrier) | [ ] |
+| 5 | Lookback Option | A | GBM + running max/min | European + LSM (American lookback) | [ ] |
+| 6 | Variance Swap | A | GBM + log-return accum | European only | [ ] |
+| 7 | Volatility Swap | A | GBM + log-return accum | European only | [ ] |
+| — | American MC (LSM) | A | GBM | — | [ ] |
+| — | Local Vol engine | B | — | — | [ ] |
+| 8 | Range Accrual | B | Local Vol MC | European only | [ ] |
+| 9 | Cliquet Option | B | Local Vol MC | European + LSM (American cliquet) | [ ] |
+| — | Correlated GBM engine | C | — | — | [ ] |
+| 10 | Rainbow Option | C | Cholesky 2-asset | European + LSM (American rainbow) | [ ] |
+| 11 | Worst-of Option | C | Cholesky + LSM | European + LSM | [ ] |
+| — | Heston engine | D | — | — | [ ] |
+| 12 | Accumulator | D | Heston + LSM | LSM primary | [ ] |
+| — | SLV engine | E | — | — | [ ] |
+| 13 | Autocallable | E | SLV + LSM + AAD | LSM primary | [ ] |
 
-| # | Product | Note | Code | Needs | Status |
-|---|---------|------|------|-------|--------|
-| 1 | Variance Swap | `notes/products/variance-swap.md` | `code/cpp/products/variance_swap.cpp` | BS | [ ] |
-| 2 | Lookback Option | `notes/products/lookback-option.md` | `code/cpp/products/lookback.cpp` | BS | [ ] |
-| 3 | Volatility Swap | `notes/products/volatility-swap.md` | `code/cpp/products/vol_swap.cpp` | BS | [ ] |
-| 4 | Range Accrual | `notes/products/range-accrual.md` | `code/cpp/products/range_accrual.cpp` | Local Vol | [ ] |
-| 5 | Cliquet Option | `notes/products/cliquet-option.md` | `code/cpp/products/cliquet.cpp` | Local Vol | [ ] |
-| 6 | Accumulator | `notes/products/accumulator.md` | `code/cpp/products/accumulator.cpp` | Heston | [ ] |
-| 7 | Autocallable | `notes/products/autocallable.md` | `code/cpp/products/autocallable.cpp` | SLV | [ ] |
+**MC method rationale:**
+
+- *European only* — payoff is determined at T with no meaningful early exercise (realized variance, digital binary)
+- *European + LSM* — standard version is European, but the American variant (early exercise) is a natural extension once LSM exists; implement both
+- *LSM primary* — the product is inherently Bermudan/path-stopping; European MC gives the wrong price
 
 ---
 
 ## Weekly Schedule
 
-### Track 1 — Volatility Models
+### Block A — GBM engine + BS products (~11 weeks, Jun 5 – Aug 15)
 
-#### Week 1 — Jun 5–7: Engine Foundations
+#### Week 1 — Jun 5–7: Engine Seed
 
-Build the two shared headers from scratch.
+Build the minimum viable engine — one path generator, one PDE solver, one product.
 
-- `mc_engine.h`: one function `simulate_gbm_path(S0, r, sigma, T, N)` returning daily prices. Price a vanilla European call by averaging `max(S_T - K, 0)` over many paths.
+- `mc_engine.h`: `simulateGbmPath(S0, r, sigma, T, N)` returning daily prices. Price a vanilla European call by averaging `max(S_T - K, 0)` over many paths.
 - `pde_engine.h`: 1D Crank-Nicolson solver. Solve the BS PDE backward in time from the call payoff at maturity.
 - Verify both against BS closed-form. If both agree to < 0.5%, the engines are correct.
 
-**RNG this week:** use `std::mt19937` seeded with `std::random_device`. Understand why the seed matters for reproducibility.
+**RNG this week:** `std::mt19937` seeded with `std::random_device`. Understand why the seed matters for reproducibility.
 
-**Variance reduction this week:** implement antithetic variates in the GBM pricer — for each path drawn with Z, also price with −Z. Check that it reduces standard error for the same number of paths.
+**Variance reduction this week:** antithetic variates — for each path drawn with Z, also price with −Z. Check that it reduces standard error for the same number of paths.
 
-**From the book:** structure `mc_engine.h` with parallelism in mind from the start. Each path is independent — think about what that means for thread safety before adding `std::thread` later.
-
-Note about PDE will be needed!
+**From the book:** design `mc_engine.h` with parallelism in mind from the start. Each path is independent — think about what that means for thread safety before adding `std::thread` later.
 
 ---
 
-#### Weeks 2–3 — Jun 10–20: Local Volatility (Dupire)
+#### Week 2 — Jun 10–14: Digital Option + Chooser Option
+
+No new engine code — these are pure payoff changes on top of the GBM engine.
+
+**Digital Option**
+Note: `notes/products/digital-option.md`
+Code: `code/cpp/products/digital.cpp`
+
+**Theory:** cash-or-nothing payoff P·𝟏_{S_T > K}; risk-neutral pricing as discounted probability; delta spike at K; why you can't hedge a digital with a single vanilla.
+**C++:** MC counts paths where S_T > K. BS closed-form: P·e^{-rT}·N(d₂). PDE: step function terminal condition on the 1D CN grid.
+**QuantLib:** `CashOrNothingPayoff`, `AnalyticEuropeanEngine`.
+
+**Chooser Option**
+Note: `notes/products/chooser-option.md`
+Code: `code/cpp/products/chooser.cpp`
+
+**Theory:** at choice date T_c the holder picks max(call, put) with same strike K and expiry T; decomposition via put-call parity into a call expiring at T plus a put expiring at T_c; closed-form under BS.
+**C++:** MC prices both call and put at T_c and takes the max. Closed-form as double-check.
+**QuantLib:** `SimpleChooserOption`, `AnalyticSimpleChooserEngine`.
+
+---
+
+#### Weeks 3–4 — Jun 17–28: Asian Option
+
+First engine extension: add path-average accumulation.
+
+Note: `notes/products/asian-option.md`
+Code: `code/cpp/products/asian.cpp`
+
+**Engine extension:** `simulateGbmPath` already returns all daily prices — accumulate the arithmetic mean inside the payoff loop. No change to the header yet; just a new product file.
+
+**Theory:** arithmetic average payoff max(S_avg − K, 0); why arithmetic average has no closed-form (sum of log-normals is not log-normal); geometric average does — Kemna-Vorst formula.
+**C++:** MC tracks path average. Control variate: price geometric average analytically, use as baseline to reduce arithmetic MC variance.
+**American Asian (after LSM week):** exercise at any time τ receiving max(A_τ − K, 0). State for LSM regression is 2D: `{1, S, A, S², A², SA}` where A is the running average to date. The path already tracks A_t — adding early exercise is almost free once LSM exists.
+**QuantLib:** `DiscreteAveragingAsianOption`, `AnalyticDiscreteGeometricAveragePriceAsianEngine`.
+
+---
+
+#### Weeks 5–6 — Jul 1–12: Barrier Option
+
+Engine extension: barrier condition checking in MC + absorbing BC in PDE.
+
+Note: `notes/products/barrier-option.md`
+Code: `code/cpp/products/barrier.cpp`
+
+**Engine extension:** add per-step barrier check inside the GBM path loop. Extend `pde_engine.h` with a Dirichlet absorbing boundary condition at the barrier level.
+
+**Theory:** knock-in / knock-out variants; reflection principle; Rubinstein-Reiner closed-form; in-out parity (knock-in + knock-out = vanilla).
+**C++:** MC checks barrier at each step; if hit, path is killed / activated. PDE: absorbing BC at barrier. Compare MC, PDE, Rubinstein-Reiner.
+**QuantLib:** `BarrierOption`, `AnalyticBarrierEngine`, `FdBlackScholesBarrierEngine`.
+
+---
+
+#### Weeks 7–8 — Jul 14–25: Lookback Option
+
+Engine extension: running max/min tracking + 2D PDE.
+
+Note: `notes/products/lookback-option.md`
+Code: `code/cpp/products/lookback.cpp`
+
+**Engine extension:** MC already iterates over daily prices — track running max/min inside the loop. PDE needs to become 2D: grid in (S, M) where M is the running extremum. Extend `pde_engine.h`.
+
+**Theory:** floating and fixed strike variants; Goldman-Sosin-Gatto closed form; why lookbacks are expensive.
+**C++:** MC tracks running max/min. 2D PDE with payoff living at the boundary M = S_T.
+**QuantLib:** `LookbackOption`, `AnalyticContinuousFixedLookbackEngine`.
+
+---
+
+#### Weeks 9–10 — Jul 28 – Aug 8: Variance Swap + Volatility Swap
+
+Engine extension: log-return accumulation.
+
+**Variance Swap**
+Note: `notes/products/variance-swap.md`
+Code: `code/cpp/products/variance_swap.cpp`
+
+**Engine extension:** accumulate squared log-returns along each path — one extra variable per path, no structural change to the engine.
+
+**Theory:** realized variance definition; log-contract replication (Demeterfi-Derman-Kamal-Zou 1999).
+**C++:** MC averages squared log-returns; PDE prices the log-contract with 1D CN.
+**QuantLib:** `VarSwap` or manual replication check.
+
+**Volatility Swap**
+Note: `notes/products/volatility-swap.md`
+Code: `code/cpp/products/vol_swap.cpp`
+
+**Theory:** payoff = √(realized var) − K_vol; Jensen's gap; Brockhaus-Long approximation.
+**C++:** two-line change from variance swap (take sqrt). No clean PDE — use the approximation.
+**QuantLib:** validate MC against the Brockhaus-Long formula.
+
+---
+
+#### Week 11 — Aug 11–15: American MC (Longstaff-Schwartz)
+
+Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
+
+**Algorithm:**
+1. Simulate N paths forward (use existing `simulateGbmPath`)
+2. At each exercise date, regress estimated continuation value on basis functions of S (e.g. Laguerre polynomials or simple {1, S, S²})
+3. Compare immediate exercise value to continuation estimate — exercise if intrinsic > continuation
+4. Work backward through exercise dates to time 0
+
+**First test:** American put — compare `priceLsm()` output to the PDE backward induction result (PDE handles American naturally via early exercise condition). If they agree within ~1%, LSM is working.
+
+**Revisit earlier products with American MC once LSM is green:**
+- American barrier option — barrier knock-out + early exercise; compare to European barrier price
+- American lookback — early exercise on running max/min; significantly more expensive than European
+
+**From the book:** LSM regression is embarrassingly parallel per path during the forward simulation. The backward regression pass is sequential but cheap.
+
+---
+
+### Block B — Local Vol engine + products (~7 weeks, Aug 18 – Oct 3)
+
+#### Weeks 12–14 — Aug 18 – Sep 5: Local Volatility (Dupire)
+
+Engine extension: `simulateLocalVolPath()` in `mc_engine.h`.
 
 Note: `notes/models/local-volatility.md`
 Code: `code/cpp/models/local_vol.cpp`
 
 **Theory:**
-
 - Dupire's formula — extracting σ(K,T) from a market call surface C(K,T)
 - Breeden-Litzenberger — implied risk-neutral density from call prices
 - Why local vol is a complete model (unique diffusion matching all European prices)
 - The flat-forward problem — local vol smiles flatten at long maturities, intuition why
 
-**C++:**
+**Engine extension:** add `simulateLocalVolPath` to `mc_engine.h` — bilinear interpolation on a discrete σ(S,t) grid at each Euler step. Add the Dupire forward PDE to `pde_engine.h` for calibration.
 
-- Extend `mc_engine.h` with `simulate_local_vol_path` — bilinear interpolation on a discrete σ(S,t) grid at each Euler step
-- In `local_vol.cpp`: build a toy skewed vol surface, run MC, run 1D PDE, compare to QuantLib
-
-**Variance reduction this week:** add control variates — use the BS flat-vol price as the control. The local vol price should be close to it; the control variate removes the common variance.
-
+**Variance reduction this week:** control variates — use the BS flat-vol price as the control.
 **QuantLib:** `BlackVarianceSurface`, `LocalVolSurface`, `GeneralizedBlackScholesProcess`
 
 ---
 
-#### Weeks 4–6 — Jun 23 – Jul 11: Heston Model
+#### Weeks 15–16 — Sep 8–19: Range Accrual
+
+Note: `notes/products/range-accrual.md`
+Code: `code/cpp/products/range_accrual.cpp`
+
+**Theory:** coupon accrues on days where L ≤ S ≤ U; decomposition into a digital call spread; why vol skew at the barriers dominates the price.
+**C++:** Local vol MC simulates daily and counts barrier hits. PDE adds source term c·𝟏_{L≤S≤U} to the 1D CN solver at each time step.
+**QuantLib:** decompose into `CashOrNothingPayoff` digital calls as a check.
+
+---
+
+#### Weeks 17–18 — Sep 22 – Oct 3: Cliquet Option
+
+Note: `notes/products/cliquet-option.md`
+Code: `code/cpp/products/cliquet.cpp`
+
+**Theory:** series of forward-starting options reset at T₁, T₂, …; forward vol; why BS misprices cliquets (Gatheral ch.7).
+**C++:** Local vol MC with strike resets at each observation date. PDE is a chain of 1D CN solves stitched at reset dates.
+**QuantLib:** `ForwardVanillaOption`, `ForwardPerformanceVanillaOption`.
+
+---
+
+### Block C — Correlated GBM + multi-asset products (~4 weeks, Oct 6–31)
+
+#### Weeks 19–20 — Oct 6–17: Rainbow Option
+
+Engine extension: `simulate_correlated_gbm_path()` using Cholesky.
+
+Note: `notes/products/rainbow-option.md`
+Code: `code/cpp/products/rainbow.cpp`
+
+**Engine extension:** add a 2-asset correlated GBM function to `mc_engine.h`. Input: two vols σ₁, σ₂ and correlation ρ. Internally: Cholesky-decompose the 2×2 covariance matrix, generate two independent normals, transform them.
+
+**Theory:** payoff max(S₁ − K₁, S₂ − K₂); Margrabe's exchange option formula (K=0 case); correlation risk — how ρ affects the price.
+**C++:** MC prices the max payoff. Compare to Margrabe's formula as sanity check.
+**QuantLib:** `TwoAssetCorrelationOption` or manual Margrabe.
+
+---
+
+#### Weeks 21–22 — Oct 20–31: Worst-of Option
+
+First use of LSM in a multi-asset setting.
+
+Note: `notes/products/worst-of-option.md`
+Code: `code/cpp/products/worst_of.cpp`
+
+**Theory:** payoff based on the worst performer: min(S₁, S₂) − K; why worst-of is cheaper than a single-asset option; correlation sensitivity — worst-of gets cheaper as ρ → 1.
+**C++:** reuse the 2-asset correlated GBM. European MC for the plain version. Apply `priceLsm()` for the American-style worst-of — regress on {1, S₁, S₂, S₁², S₂², S₁S₂}.
+**QuantLib:** `BasketOption` with `MCAmericanBasketEngine`.
+
+---
+
+### Block D — Heston engine + products (~6 weeks, Nov 3 – Dec 12)
+
+#### Weeks 23–25 — Nov 3–21: Heston Model
+
+Engine extension: `simulateHestonPath()` + 2D ADI in `pde_engine.h`.
 
 Note: `notes/models/heston-model.md`
 Code: `code/cpp/models/heston.cpp`
@@ -141,127 +444,67 @@ Code: `code/cpp/models/heston.cpp`
 **Theory:**
 
 - Two SDEs: stock price + CIR variance process
-- Parameters: v₀, κ (mean reversion), θ (long-run variance), ξ (vol of vol), ρ (correlation)
-- Feller condition 2κθ > ξ² — keeps variance positive; what breaks if violated
-- Characteristic function of log(S_T) — closed-form
-- Semi-analytic vanilla pricer via inverse Fourier transform (Heston 1993)
+- Parameters: v₀, κ, θ, ξ, ρ
+- Feller condition 2κθ > ξ² — keeps variance positive
+- Characteristic function of log(S_T) — closed-form semi-analytic pricer (Heston 1993)
 
-**C++:**
+**Engine extension:** `simulateHestonPath` — Euler-Milstein with variance reflection (v_t ← |v_t|). Extend `pde_engine.h` with 2D Craig-Sneyd ADI on a (S,v) grid (~100×50 nodes).
 
-- Extend `mc_engine.h` with `simulate_heston_path` using Euler and Milstein. If v_t goes negative, reflect: v_t ← |v_t|
-- Extend `pde_engine.h` with 2D Craig-Sneyd ADI on a (S,v) grid (~100×50 nodes). Splits the 2D step into two 1D tridiagonal solves per time step
-- In `heston.cpp`: implement the characteristic function pricer as baseline, compare MC and ADI PDE against QuantLib
+**RNG upgrade:** swap `std::mt19937` for Sobol sequences. Compare convergence: O(1/N) quasi-MC vs O(1/√N) standard MC.
 
-**RNG upgrade this week:** swap `std::mt19937` for Sobol sequences and compare convergence. Quasi-MC converges as O(1/N) vs O(1/√N) for standard MC — you should see it clearly in a convergence plot.
+**From the book:** parallelize Heston MC with `std::thread`. Each thread gets its own RNG state. Use `std::atomic<double>` or a mutex to accumulate. Compare 1, 2, 4 threads.
 
-**From the book:** parallelize the Heston MC using `std::thread`. Each thread gets its own RNG state (never share an RNG across threads). Use `std::atomic<double>` or a mutex to accumulate results safely. Compare wall-clock time with 1, 2, 4 threads.
-
-**QuantLib:** `HestonModel`, `HestonProcess`, `AnalyticHestonEngine`, `FdHestonVanillaEngine`
+**QuantLib:** `HestonModel`, `AnalyticHestonEngine`, `FdHestonVanillaEngine`
 
 ---
 
-#### Weeks 7–10 — Jul 14 – Aug 8: Stochastic Local Vol (SLV)
+#### Weeks 26–28 — Nov 24 – Dec 12: Accumulator
+
+LSM + Heston: knock-out is a path-dependent stopping condition, natural fit for LSM.
+
+Note: `notes/products/accumulator.md`
+Code: `code/cpp/products/accumulator.cpp`
+
+**Theory:** daily share delivery at a fixed forward price while stock stays above knock-out barrier; leveraged accumulation below forward; risk profile and why these caused losses in 2008.
+**C++:** Heston MC with per-step knock-out check. Apply `priceLsm()` — the holder can be thought of as deciding whether to continue accumulating. PDE: 2D Heston grid with Dirichlet absorbing BC at knock-out.
+**QuantLib:** `BarrierOption` with `FdHestonBarrierEngine` as partial benchmark.
+
+---
+
+### Block E — SLV engine + Autocallable (~9 weeks, Jan 5 – Mar 6 2027)
+
+#### Weeks 29–32 — Jan 5 – Jan 30: Stochastic Local Vol (SLV)
+
+Engine extension: `simulate_slv_path()` + leverage function calibration.
 
 Note: `notes/models/stochastic-local-vol.md`
 Code: `code/cpp/models/slv.cpp`
 
 **Theory:**
-
-- Motivation: local vol fits surface exactly but distorts forward smiles; Heston has better dynamics but doesn't fit surface. SLV combines both
 - SLV SDE: dS = r S dt + L(S,t)·√v·S·dW^S with v following Heston
-- Gyöngy's lemma — basis for the leverage function: any Itô process has the same marginals as a 1D diffusion
-- Calibration: find L(S,t) such that SLV reproduces the full implied vol surface exactly
-- Particle method — simulate a large ensemble, at each step estimate E[v|S=x] by binning, set L²(x,t) = σ_LV²(x,t) / E[v|S=x]
+- Gyöngy's lemma — basis for the leverage function
+- Particle method: simulate ensemble, estimate E[v|S=x] by binning, set L²(x,t) = σ_LV²(x,t) / E[v|S=x]
 
-**C++:**
+**Engine extension:** `simulate_slv_path` — pre-computed L(S,t) grid looked up at each step. In `slv.cpp`: calibration loop starting from L=1, iterating to convergence.
 
-- Extend `mc_engine.h` with `simulate_slv_path` — pre-computed L(S,t) grid, looked up at each step
-- In `slv.cpp`: demo the calibration loop. Start with L=1 (pure Heston), run paths, estimate E[v|S], update L, iterate to convergence
+**Variance reduction:** importance sampling — shift the drift to concentrate paths near the barrier region.
 
-**Variance reduction this week:** importance sampling — shift the drift to concentrate paths near the region of interest (e.g. near the barrier for barrier products). Requires a Radon-Nikodym weight per path.
-
-**From the book:** the particle method calibration loop is embarrassingly parallel up to the binning step. Use a thread pool pattern to simulate the ensemble, then synchronise at the binning step with a mutex.
+**From the book:** particle method calibration is embarrassingly parallel up to the binning step. Use a thread pool, synchronise at binning with a mutex.
 
 **QuantLib:** `HestonSLVProcess`, `HestonSLVFokkerPlanckFdmEngine`
 
 ---
 
-### Track 2 — Exotic Products
+#### Weeks 33–38 — Feb 3 – Mar 13: Autocallable
 
-#### Weeks 11–12 — Aug 11–22: Variance Swap
-
-Note: `notes/products/variance-swap.md`
-Code: `code/cpp/products/variance_swap.cpp` | Needs: BS
-
-**Theory:** realized variance definition; log-contract replication (Demeterfi-Derman-Kamal-Zou 1999); why variance swaps can be replicated with a strip of vanillas.
-**C++:** MC averages squared log-returns; PDE prices the log-contract with 1D CN.
-**QuantLib:** `VarSwap` or manual replication check.
-
----
-
-#### Weeks 13–15 — Aug 25 – Sep 12: Lookback Option
-
-Note: `notes/products/lookback-option.md`
-Code: `code/cpp/products/lookback.cpp` | Needs: BS
-
-**Theory:** floating and fixed strike variants; Goldman-Sosin-Gatto closed form; why lookbacks are expensive.
-**C++:** MC tracks running max/min per path. PDE is 2D in (S, M) where M is the running maximum.
-**QuantLib:** `LookbackOption`, `AnalyticContinuousFixedLookbackEngine`.
-
----
-
-#### Week 16 — Sep 15–20: Volatility Swap
-
-Note: `notes/products/volatility-swap.md`
-Code: `code/cpp/products/vol_swap.cpp` | Needs: BS
-
-**Theory:** payoff = √(realized var) − K_vol; Jensen's gap; Brockhaus-Long approximation K_vol ≈ √(K_var) − Var/(8 K_var^(3/2)).
-**C++:** MC is a two-line change from variance swap (take sqrt). No clean PDE — use the approximation instead.
-**QuantLib:** validate MC against the Brockhaus-Long formula.
-
----
-
-#### Weeks 17–18 — Sep 22 – Oct 3: Range Accrual
-
-Note: `notes/products/range-accrual.md`
-Code: `code/cpp/products/range_accrual.cpp` | Needs: Local Vol
-
-**Theory:** coupon accrues on days where L ≤ S ≤ U; decomposition into a digital call spread; why vol skew at the barriers dominates the price.
-**C++:** MC simulates daily and counts barrier hits. PDE adds an inhomogeneous source term c·𝟏_{L≤S≤U} to the 1D CN solver at each time step.
-**QuantLib:** decompose into `CashOrNothingPayoff` digital calls as a check.
-
----
-
-#### Weeks 19–21 — Oct 6–24: Cliquet Option
-
-Note: `notes/products/cliquet-option.md`
-Code: `code/cpp/products/cliquet.cpp` | Needs: Local Vol
-
-**Theory:** series of forward-starting options reset at T₁, T₂, …; forward vol; why BS misprices cliquets (Gatheral ch.7).
-**C++:** MC with local vol, strike resets at each observation date. PDE is a chain of 1D CN solves stitched at reset dates.
-**QuantLib:** `ForwardVanillaOption`, `ForwardPerformanceVanillaOption`.
-
----
-
-#### Weeks 22–23 — Oct 27 – Nov 7: Accumulator
-
-Note: `notes/products/accumulator.md`
-Code: `code/cpp/products/accumulator.cpp` | Needs: Heston
-
-**Theory:** daily share delivery at a fixed forward price while stock stays above knock-out barrier; leveraged accumulation below forward; risk profile and why these caused losses in 2008.
-**C++:** Heston MC with per-step knock-out check. PDE uses the 2D Heston grid with Dirichlet absorbing BC at knock-out level.
-**QuantLib:** `BarrierOption` with `FdHestonBarrierEngine` as partial benchmark.
-
----
-
-#### Weeks 24–29 — Nov 10 – Dec 19: Autocallable
+LSM + SLV + AAD: the capstone product.
 
 Note: `notes/products/autocallable.md`
-Code: `code/cpp/products/autocallable.cpp` | Needs: SLV
+Code: `code/cpp/products/autocallable.cpp`
 
-**Theory:** periodic autocall schedule (knock-out coupon if S > autocall level); barrier protection at maturity; memory coupon feature. Needs SLV because it is sensitive to both the marginal distribution (local vol) and the forward dynamics (stochastic vol).
-**C++:** SLV MC with per-observation-date autocall and barrier checks. PDE is 2D ADI with Bermudan backward induction — at each observation date replace continuation value with autocall payoff where triggered.
-**From the book:** compute Greeks (delta, vega, theta, barrier digital risk) using AAD — bump-and-reprice is too slow for a full Greek surface on a path-dependent product. AAD gives all Greeks in roughly the same time as one price.
+**Theory:** periodic autocall schedule; barrier protection at maturity; memory coupon feature. Needs SLV because it is sensitive to both the marginal distribution (local vol) and the forward dynamics (stochastic vol).
+**C++:** SLV MC with per-observation-date autocall and barrier checks. Apply `priceLsm()` for the Bermudan backward induction — at each observation date, regress continuation value and compare to autocall payoff. PDE: 2D ADI with explicit Bermudan induction step.
+**From the book:** compute Greeks (delta, vega, theta, barrier digital risk) using AAD — bump-and-reprice is too slow for a full Greek surface on a path-dependent product.
 **QuantLib:** `FdHestonBarrierEngine` + custom payoff as rough benchmark.
 
 ---
@@ -281,6 +524,5 @@ Each note in `notes/models/` or `notes/products/` must contain:
 - YAML frontmatter: `type`, `category`, `tags`, `related`, `status`
 - Wikilinks `[[note-name]]` for Foam graph
 - `#tag` at the bottom for Foam filtering
-
 
 [Modern-Computational-Finance-AAD-and-Parallel-Simulations]: books/Modern-Computational-Finance-AAD-and-Parallel-Simulations.md "AAD and // Simulation"
