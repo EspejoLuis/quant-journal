@@ -46,7 +46,7 @@ Follows QuantLib convention, which does not conflict with any C++ Core Guideline
 NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are met.
 
 | Thing | Convention | Example |
-|-------|-----------|---------|
+| ----- | ---------- | ------- |
 | Files | `lowerCamelCase`, `.h` / `.cpp` | `mcEngine.h`, `barrier.cpp` |
 | Types (class, struct, enum) | `UpperCamelCase` | `class GbmPath` |
 | Functions | `lowerCamelCase` | `simulateGbmPath()` |
@@ -197,7 +197,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 ### Product checklist
 
 | # | Product | Block | Needs | MC pricing | Status |
-|---|---------|-------|-------|------------|--------|
+| - | ------- | ----- | ----- | ---------- | ------ |
 | — | Engine seed (GBM + 1D CN) | A | — | — | [ ] |
 | 1 | Digital Option | A | GBM | European only | [ ] |
 | 2 | Chooser Option | A | GBM | European only | [ ] |
@@ -343,6 +343,7 @@ Code: `code/cpp/products/vol_swap.cpp`
 Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
 
 **Algorithm:**
+
 1. Simulate N paths forward (use existing `simulateGbmPath`)
 2. At each exercise date, regress estimated continuation value on basis functions of S (e.g. Laguerre polynomials or simple {1, S, S²})
 3. Compare immediate exercise value to continuation estimate — exercise if intrinsic > continuation
@@ -351,6 +352,7 @@ Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique 
 **First test:** American put — compare `priceLsm()` output to the PDE backward induction result (PDE handles American naturally via early exercise condition). If they agree within ~1%, LSM is working.
 
 **Revisit earlier products with American MC once LSM is green:**
+
 - American barrier option — barrier knock-out + early exercise; compare to European barrier price
 - American lookback — early exercise on running max/min; significantly more expensive than European
 
@@ -368,6 +370,7 @@ Note: `notes/models/local-volatility.md`
 Code: `code/cpp/models/local_vol.cpp`
 
 **Theory:**
+
 - Dupire's formula — extracting σ(K,T) from a market call surface C(K,T)
 - Breeden-Litzenberger — implied risk-neutral density from call prices
 - Why local vol is a complete model (unique diffusion matching all European prices)
@@ -481,6 +484,7 @@ Note: `notes/models/stochastic-local-vol.md`
 Code: `code/cpp/models/slv.cpp`
 
 **Theory:**
+
 - SLV SDE: dS = r S dt + L(S,t)·√v·S·dW^S with v following Heston
 - Gyöngy's lemma — basis for the leverage function
 - Particle method: simulate ensemble, estimate E[v|S=x] by binning, set L²(x,t) = σ_LV²(x,t) / E[v|S=x]
