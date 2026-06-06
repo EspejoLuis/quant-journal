@@ -1,3 +1,7 @@
+---
+type: note
+category: math
+---
 # Stochastic Exponential
 
 ## How to get there?
@@ -66,4 +70,4 @@ $$
 
 The $-\frac{1}{2}t$ is the Itô correction that cancels the drift and makes it a martingale.
 
-#itoLemma #martingale #doleansDade
+#itoLemma #martingale #doleansDade #brownianMotion #lognormal

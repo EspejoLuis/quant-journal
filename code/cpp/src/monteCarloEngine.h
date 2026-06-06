@@ -1,5 +1,6 @@
 // monteCarloEngine.h - Monte Carlo generator.
 #pragma once
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -8,15 +9,16 @@ struct ModelParameters {
     double interestRate;
     double dividendRate;
     double volatility;
-    double maturity;
+    double maturityInYears;
 };
 
 struct SimulationParameters {
-    int nTimeSteps;
     int nPaths;
+    int nSteps;
+    std::optional<unsigned int> seed;
 };
 
-// Returns matrix of nPaths x nTimeSteps
+// Returns matrix of nPaths x nSteps
 std::vector<std::vector<double>> simulateGbmPath(
     const ModelParameters& modelParams, const SimulationParameters& simParams);
 
