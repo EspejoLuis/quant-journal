@@ -138,7 +138,7 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 - **Rule:** every function gets a test file before or immediately after implementation. No exceptions.
 - **Unit tests:** verify the function in isolation — known inputs, expected outputs.
 - **Integration tests:** run the full pricer and compare against a closed-form or QuantLib benchmark (tolerance < 0.5%).
-- Test files live alongside the source: `monteCarloEngine.test.cpp`, `barrier.test.cpp`, etc.
+- Test files live in `code/cpp/tests/`, named after the source file: `monteCarloEngine.cpp`, `barrier.cpp`, etc.
 
 ### Comments (NL.1, NL.2)
 
@@ -185,7 +185,7 @@ Grows one function per block:
 **Model and product files** are standalone `.cc` files that `#include` the two headers above and nothing else. Each compiles and runs with:
 
 ```bash
-g++ -std=c++17 <file>.cc -o out && ./out
+g++ -std=c++20 <file>.cpp -o out && ./out
 ```
 
 ---
