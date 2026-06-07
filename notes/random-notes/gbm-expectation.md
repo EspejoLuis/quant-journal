@@ -44,6 +44,26 @@ $$\boxed{E[S_T] = S_0 \cdot e^{(r-q)T}}$$
 
 This holds for **any** $\sigma$ — the Itô correction $-\tfrac{1}{2}\sigma^2 T$ is precisely designed to cancel $\tfrac{b^2}{2}$, keeping the expectation equal to the forward price.
 
+## Variance and standard deviation of $S_T$
+
+$S_T$ is lognormal. Using the lognormal variance formula:
+
+$$\text{Var}[S_T] = (E[S_T])^2 \cdot \left(e^{\sigma^2 T} - 1\right)$$
+
+Taking the square root:
+
+$$\boxed{\text{std}(S_T) = S_0 \cdot e^{(r-q)T} \cdot \sqrt{e^{\sigma^2 T} - 1}}$$
+
+**Why does $\sigma$ appear here but cancel in the mean?** The Itô correction $-\tfrac{1}{2}\sigma^2 T$ cancels the $\tfrac{b^2}{2}$ term exactly when computing the mean, leaving no $\sigma$ dependence. But variance measures spread — and higher $\sigma$ means wider paths, so it survives.
+
+## Standard error of the Monte Carlo mean
+
+With $N$ paths, the CLT gives:
+
+$$\text{SE} = \frac{\text{std}(S_T)}{\sqrt{N}}$$
+
+Use $3 \times \text{SE}$ as your test tolerance — this covers 99.7% of outcomes for any fixed seed drawn from the same distribution.
+
 ## Special case: $\sigma = 0$
 
 When $\sigma = 0$, the path is deterministic:
