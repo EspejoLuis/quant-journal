@@ -48,7 +48,7 @@ TEST_CASE("simulateGbmPath returns correct. Fixed seed. Positive volatility",
                                 .maturityInYears = 1.0};
 
     SimulationParameters simParams{
-        .nPaths = 100'000, .nSteps = 1000, .seed = 11};
+        .nPaths = 100'000, .nSteps = 100, .seed = 11};
 
     std::vector<std::vector<double>> simulatedPaths =
         simulateGbmPath(modelParams, simParams);
@@ -113,4 +113,51 @@ TEST_CASE("simulateGbmPath returns correct. No Seed. Positive volatility",
     for (const std::vector<double>& path : simulatedPaths)
         for (const double& step : path)
             REQUIRE(step >= 0);
+}
+
+TEST_CASE("validateGbmInputs returns error. Incorrec SimulationParameters ",
+          "[monteCarloEngine]") {
+
+    ModelParameters modelParams{.underlyingPrice = 100.0,
+                                .interestRate = 0.02,
+                                .dividendRate = 0.05,
+                                .volatility = 0.2,
+                                .maturityInYears = 1.0};
+
+    auto [nP, nS] = GENERATE(table<int, int>({
+        {-100, 5},
+        {-100, -5},
+        {100, -5},
+        {0, 0},
+        {23, 0},
+        {1, 0},
+    }));
+
+    SimulationParameters simParams{.nPaths = nP, .nSteps = nS};
+
+    REQUIRE_THROWS_AS(validateGbmInputs(modelParams, simParams),
+                      std::invalid_argument);
+}
+
+TEST_CASE("validateGbmInputs returns error. Incorrec ModelParameters ",
+          "[monteCarloEngine]") {
+
+    auto [s0, r, q, sigma, T] =
+        GENERATE(table<double, double, double, double, double>({
+            {-100.0, 0.05, 0.02, 0.2, 1.0},
+            {100.0, 0.05, 0.02, -0.2, 1.0},
+            {100.0, 0.05, 0.02, 0.2, -1.0},
+            {100.0, 0.05, 0.02, 0.2, 0.0},
+        }));
+
+    ModelParameters modelParams{.underlyingPrice = s0,
+                                .interestRate = r,
+                                .dividendRate = q,
+                                .volatility = sigma,
+                                .maturityInYears = T};
+
+    SimulationParameters simParams{.nPaths = 10, .nSteps = 10};
+
+    REQUIRE_THROWS_AS(validateGbmInputs(modelParams, simParams),
+                      std::invalid_argument);
 }

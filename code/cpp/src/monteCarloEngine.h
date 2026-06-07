@@ -18,6 +18,9 @@ struct SimulationParameters {
     std::optional<unsigned int> seed;
 };
 
+void validateGbmInputs(const ModelParameters& modelParams,
+                       const SimulationParameters& simParams);
+
 // Returns matrix of nPaths x nSteps
 std::vector<std::vector<double>> simulateGbmPath(
     const ModelParameters& modelParams, const SimulationParameters& simParams);
