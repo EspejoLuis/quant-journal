@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug monteCarloEngineUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

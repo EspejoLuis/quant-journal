@@ -25,5 +25,20 @@
     }
   ],
   "editor.formatOnSave": true,
-  "C_Cpp.formatting": "clangFormat"
+  "C_Cpp.formatting": "clangFormat",
+  "cmake.configureOnOpen": false,
+  "cmake.sourceDirectory": "${workspaceFolder}/code/cpp",
+  "cmake.buildDirectory": "${workspaceFolder}/code/cpp/build",
+  "cmake.buildType": "Debug",
+  "cmake.buildBeforeRun": true,
+  "cmake.ctest.testExplorerIntegrationEnabled": false,
+  "testMate.cpp.test.advancedExecutables": [
+    { "name": "Unit Tests", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" }
+  ],
+
+   "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+  },
 }
