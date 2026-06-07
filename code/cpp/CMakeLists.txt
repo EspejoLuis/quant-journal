@@ -11,10 +11,14 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Catch2 REQUIRED)
 # Define a library target (.a) named 'quantJournal' made from cpp file
 # This will compile src/monteCarloEngine.cpp into a reusable static library
-add_library(quantJournal src/monteCarloEngine.cpp)
+set(SOURCES
+    src/monteCarloEngine.cpp
+    src/product/vanillaEuropeanOption.cpp
+)
+add_library(quantJournal ${SOURCES})
 # Specify the include directory for the quantJournal library
 # Any target that links to quantJournal will be able to find headers here.
-target_include_directories(quantJournal PUBLIC src/)
+target_include_directories(quantJournal PUBLIC src/ src/product)
 
 ##### Unit Test EXECUTABLE #####
 # Define an executable target named 'monteCarloEngineUnit'
@@ -24,8 +28,9 @@ add_executable(monteCarloEngineUnit tests/unit/monteCarloEngine.cpp)
 target_include_directories(monteCarloEngineUnit PRIVATE tests/unit)
 # Link the quantJournal library into the 'monteCarloEngineUnit' executable
 target_link_libraries(monteCarloEngineUnit quantJournal Catch2::Catch2WithMain)
-
 add_test(NAME monteCarloEngineUnit COMMAND monteCarloEngineUnit)
+
+
 
 
 # ------------------------------------------------------------------------------------
