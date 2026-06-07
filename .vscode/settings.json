@@ -41,4 +41,10 @@
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true
   },
+
+  "VsCodeTaskButtons.tasks": [
+    { "label": "$(tools) Build Lib", "task": "Build Library" },
+    { "label": "$(beaker) Build Tests", "task": "Build monteCarloEngineUnit" },
+    { "label": "$(graph) Coverage", "task": "Run Coverage" }
+  ],
 }
