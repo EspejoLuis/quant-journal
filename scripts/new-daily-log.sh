@@ -13,7 +13,8 @@ case $DAY_NUM in
   *)       SUFFIX="th" ;;
 esac
 
-LOG_DIR="/Users/apple/github_repos/quant-journal/Log/$YEAR"
+MONTH_FOLDER=$(date +%m-%b)
+LOG_DIR="/Users/apple/github_repos/quant-journal/log/$YEAR/$MONTH_FOLDER"
 FILE="$LOG_DIR/$MONTH-$DAY-$YEAR.md"
 
 mkdir -p "$LOG_DIR"
