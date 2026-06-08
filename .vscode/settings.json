@@ -33,9 +33,9 @@
   "cmake.buildBeforeRun": true,
   "cmake.ctest.testExplorerIntegrationEnabled": false,
   "testMate.cpp.test.advancedExecutables": [
-    { "name": "Unit Tests", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" }
+      { "name": "MC Engine", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" },
+      { "name": "Vanilla Option", "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit" }
   ],
-
    "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,
@@ -44,7 +44,7 @@
 
   "VsCodeTaskButtons.tasks": [
     { "label": "$(tools) Build Lib", "task": "Build Library" },
-    { "label": "$(beaker) Build Tests", "task": "Build monteCarloEngineUnit" },
+    { "label": "$(beaker) Build Tests", "task": "Build Tests" },
     { "label": "$(graph) Coverage", "task": "Run Coverage" }
   ],
 }

@@ -45,10 +45,10 @@
             },
             "problemMatcher": []
         },
-         {
-            "label": "Build monteCarloEngineUnit",
+        {
+            "label": "Build Tests",
             "type": "shell",
-            "command": "cmake --build ${workspaceFolder}/code/cpp/build --target monteCarloEngineUnit",
+            "command": "cmake --build ${workspaceFolder}/code/cpp/build",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"

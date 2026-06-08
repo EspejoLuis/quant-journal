@@ -24,12 +24,18 @@ target_include_directories(quantJournal PUBLIC src/ src/product)
 # Define an executable target named 'monteCarloEngineUnit'
 # This is your Catch2 test runner
 add_executable(monteCarloEngineUnit tests/unit/monteCarloEngine.cpp)
+add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
+
 # Include directories needed to compile 'monteCarloEngineUnit'
 target_include_directories(monteCarloEngineUnit PRIVATE tests/unit)
+target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
+
 # Link the quantJournal library into the 'monteCarloEngineUnit' executable
 target_link_libraries(monteCarloEngineUnit quantJournal Catch2::Catch2WithMain)
-add_test(NAME monteCarloEngineUnit COMMAND monteCarloEngineUnit)
+target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
 
+add_test(NAME monteCarloEngineUnit COMMAND monteCarloEngineUnit)
+add_test(NAME vanillaEuropeanOptionUnit COMMAND vanillaEuropeanOptionUnit)
 
 
 
@@ -52,10 +58,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     # -g                       : include debug symbols for better coverage reports
     target_compile_options(quantJournal           PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(monteCarloEngineUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(vanillaEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
 
     # --- 2) Add linker flags for coverage ---
     target_link_options(quantJournal           PRIVATE -fprofile-instr-generate)
     target_link_options(monteCarloEngineUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(vanillaEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
 
     # Paths/patterns to ignore from reports (tests + Catch header)
     set(ignore_regex_tests ".*/tests/")
@@ -70,19 +78,22 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     add_custom_target(
         coverage
         # Start clean: remove previous coverage artifacts so paths map cleanly
-        COMMAND ${CMAKE_COMMAND} -E remove -f unit.profraw merged.profdata
+        COMMAND ${CMAKE_COMMAND} -E remove -f monteCarloEngine.profraw vanillaEuropeanOption.profraw merged.profdata
         COMMAND ${CMAKE_COMMAND} -E remove_directory coverage_html
 
         # Run UNIT tests -> unit.profraw
-        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=unit.profraw
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=monteCarloEngine.profraw
                 $<TARGET_FILE:monteCarloEngineUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=vanillaEuropeanOption.profraw
+                $<TARGET_FILE:vanillaEuropeanOptionUnit>
 
         # Merge profiles
-        COMMAND xcrun llvm-profdata merge -sparse unit.profraw -o merged.profdata
+        COMMAND xcrun llvm-profdata merge -sparse monteCarloEngine.profraw vanillaEuropeanOption.profraw -o merged.profdata
 
         # Generate a terminal coverage summary report for BOTH binaries
         COMMAND xcrun llvm-cov report
                 $<TARGET_FILE:monteCarloEngineUnit>
+                -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -instr-profile=merged.profdata
                 -ignore-filename-regex=${ignore_regex_tests}
                 -ignore-filename-regex=${ignore_regex_catch}
@@ -95,6 +106,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         # NOTE: we chdir to SOURCE dir so 'src/…' paths resolve and files render.
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} xcrun llvm-cov show
                 $<TARGET_FILE:monteCarloEngineUnit>
+                -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -instr-profile=${CMAKE_BINARY_DIR}/merged.profdata
                 -format=html
                 -output-dir=${CMAKE_BINARY_DIR}/coverage_html
@@ -113,7 +125,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 
         # Ensure BOTH tests are built before running coverage
-        DEPENDS monteCarloEngineUnit
+        DEPENDS monteCarloEngineUnit vanillaEuropeanOptionUnit
 
         COMMENT "Running unit + integration with LLVM coverage and generating merged terminal + HTML reports (with branch details)"
     )

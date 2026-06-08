@@ -8,6 +8,14 @@
             "program": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit",
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug vanillaEuropeanOptionUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
