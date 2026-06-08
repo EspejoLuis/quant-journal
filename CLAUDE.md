@@ -228,9 +228,9 @@ The plan is incremental: each block extends the engine by one capability, then i
 
 ## Weekly Schedule
 
-### Block A — GBM engine + BS products (~11 weeks, Jun 5 – Aug 15)
+### Block A — GBM engine + BS products (~13 weeks, Jun 5 – Aug 30)
 
-#### Week 1 — Jun 5–7: Engine Seed
+#### Week 1 — Jun 5–10: Engine Seed
 
 Build the minimum viable engine — one path generator, one PDE solver, one product.
 
@@ -246,7 +246,7 @@ Build the minimum viable engine — one path generator, one PDE solver, one prod
 
 ---
 
-#### Week 2 — Jun 10–14: Digital Option + Chooser Option
+#### Week 2 — Jun 10–20: Digital Option + Chooser Option
 
 No new engine code — these are pure payoff changes on top of the GBM engine.
 
@@ -268,7 +268,7 @@ Code: `code/cpp/products/chooser.cpp`
 
 ---
 
-#### Weeks 3–4 — Jun 17–28: Asian Option
+#### Weeks 3–4 — Jun 21 – Jul 6: Asian Option
 
 First engine extension: add path-average accumulation.
 
@@ -284,7 +284,7 @@ Code: `code/cpp/products/asian.cpp`
 
 ---
 
-#### Weeks 5–6 — Jul 1–12: Barrier Option
+#### Weeks 5–6 — Jul 7–22: Barrier Option
 
 Engine extension: barrier condition checking in MC + absorbing BC in PDE.
 
@@ -299,7 +299,7 @@ Code: `code/cpp/products/barrier.cpp`
 
 ---
 
-#### Weeks 7–8 — Jul 14–25: Lookback Option
+#### Weeks 7–8 — Jul 23 – Aug 7: Lookback Option
 
 Engine extension: running max/min tracking + 2D PDE.
 
@@ -314,7 +314,7 @@ Code: `code/cpp/products/lookback.cpp`
 
 ---
 
-#### Weeks 9–10 — Jul 28 – Aug 8: Variance Swap + Volatility Swap
+#### Weeks 9–10 — Aug 8–23: Variance Swap + Volatility Swap
 
 Engine extension: log-return accumulation.
 
@@ -338,7 +338,7 @@ Code: `code/cpp/products/vol_swap.cpp`
 
 ---
 
-#### Week 11 — Aug 11–15: American MC (Longstaff-Schwartz)
+#### Week 11 — Aug 24–30: American MC (Longstaff-Schwartz)
 
 Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
 
@@ -360,9 +360,9 @@ Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique 
 
 ---
 
-### Block B — Local Vol engine + products (~7 weeks, Aug 18 – Oct 3)
+### Block B — Local Vol engine + products (~7 weeks, Sep 1 – Oct 17)
 
-#### Weeks 12–14 — Aug 18 – Sep 5: Local Volatility (Dupire)
+#### Weeks 12–14 — Sep 1–19: Local Volatility (Dupire)
 
 Engine extension: `simulateLocalVolPath()` in `mc_engine.h`.
 
@@ -383,7 +383,7 @@ Code: `code/cpp/models/local_vol.cpp`
 
 ---
 
-#### Weeks 15–16 — Sep 8–19: Range Accrual
+#### Weeks 15–16 — Sep 20 – Oct 3: Range Accrual
 
 Note: `notes/products/range-accrual.md`
 Code: `code/cpp/products/range_accrual.cpp`
@@ -394,7 +394,7 @@ Code: `code/cpp/products/range_accrual.cpp`
 
 ---
 
-#### Weeks 17–18 — Sep 22 – Oct 3: Cliquet Option
+#### Weeks 17–18 — Oct 4–17: Cliquet Option
 
 Note: `notes/products/cliquet-option.md`
 Code: `code/cpp/products/cliquet.cpp`
@@ -405,9 +405,9 @@ Code: `code/cpp/products/cliquet.cpp`
 
 ---
 
-### Block C — Correlated GBM + multi-asset products (~4 weeks, Oct 6–31)
+### Block C — Correlated GBM + multi-asset products (~4 weeks, Oct 18 – Nov 14)
 
-#### Weeks 19–20 — Oct 6–17: Rainbow Option
+#### Weeks 19–20 — Oct 18–31: Rainbow Option
 
 Engine extension: `simulate_correlated_gbm_path()` using Cholesky.
 
@@ -422,7 +422,7 @@ Code: `code/cpp/products/rainbow.cpp`
 
 ---
 
-#### Weeks 21–22 — Oct 20–31: Worst-of Option
+#### Weeks 21–22 — Nov 1–14: Worst-of Option
 
 First use of LSM in a multi-asset setting.
 
@@ -435,9 +435,9 @@ Code: `code/cpp/products/worst_of.cpp`
 
 ---
 
-### Block D — Heston engine + products (~6 weeks, Nov 3 – Dec 12)
+### Block D — Heston engine + products (~6 weeks, Nov 15 – Dec 26)
 
-#### Weeks 23–25 — Nov 3–21: Heston Model
+#### Weeks 23–25 — Nov 15 – Dec 5: Heston Model
 
 Engine extension: `simulateHestonPath()` + 2D ADI in `pde_engine.h`.
 
@@ -461,7 +461,7 @@ Code: `code/cpp/models/heston.cpp`
 
 ---
 
-#### Weeks 26–28 — Nov 24 – Dec 12: Accumulator
+#### Weeks 26–28 — Dec 6–26: Accumulator
 
 LSM + Heston: knock-out is a path-dependent stopping condition, natural fit for LSM.
 
@@ -474,9 +474,9 @@ Code: `code/cpp/products/accumulator.cpp`
 
 ---
 
-### Block E — SLV engine + Autocallable (~9 weeks, Jan 5 – Mar 6 2027)
+### Block E — SLV engine + Autocallable (~11 weeks, Jan 5 – Mar 20 2027)
 
-#### Weeks 29–32 — Jan 5 – Jan 30: Stochastic Local Vol (SLV)
+#### Weeks 29–32 — Jan 5 – Feb 1: Stochastic Local Vol (SLV)
 
 Engine extension: `simulate_slv_path()` + leverage function calibration.
 
@@ -499,7 +499,7 @@ Code: `code/cpp/models/slv.cpp`
 
 ---
 
-#### Weeks 33–38 — Feb 3 – Mar 13: Autocallable
+#### Weeks 33–38 — Feb 2 – Mar 20: Autocallable
 
 LSM + SLV + AAD: the capstone product.
 
