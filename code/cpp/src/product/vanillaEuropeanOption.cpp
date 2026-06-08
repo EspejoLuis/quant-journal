@@ -14,18 +14,28 @@ double priceEuropeanVanillaOption(const ModelParameters& modelParams,
 
     double sumPayoffs = 0.0;
 
-    if (optParams.type == OptionType::Call) {
+    switch (optParams.type) {
+    case OptionType::Call:
         for (const std::vector<double>& path : simulatedGbmPaths)
             sumPayoffs += std::max(path.back() - optParams.strike, 0.0);
-    } else {
+        break;
+    case OptionType::Put:
         for (const std::vector<double>& path : simulatedGbmPaths)
             sumPayoffs += std::max(optParams.strike - path.back(), 0.0);
+        break;
     };
 
-    double expectedPayoff = optParams.direction == OptionDirection::Long
-                                ? sumPayoffs / simParams.nPaths
-                                : -sumPayoffs / simParams.nPaths;
+    double sign = 0.0;
+    switch (optParams.direction) {
+    case OptionDirection::Long:
+        sign = +1.0;
+        break;
+    case OptionDirection::Short:
+        sign = -1.0;
+        break;
+    }
 
+    double expectedPayoff = sign * sumPayoffs / simParams.nPaths;
     double deterministicDiscountFactor =
         std::exp(-modelParams.interestRate * modelParams.maturityInYears);
 
