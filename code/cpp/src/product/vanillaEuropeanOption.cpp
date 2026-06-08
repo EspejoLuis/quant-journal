@@ -23,9 +23,12 @@ double priceEuropeanVanillaOption(const ModelParameters& modelParams,
         for (const std::vector<double>& path : simulatedGbmPaths)
             sumPayoffs += std::max(optParams.strike - path.back(), 0.0);
         break;
+    default:
+        throw std::invalid_argument("invalid OptionType");
     };
 
     double sign = 0.0;
+
     switch (optParams.direction) {
     case OptionDirection::Long:
         sign = +1.0;
@@ -33,6 +36,8 @@ double priceEuropeanVanillaOption(const ModelParameters& modelParams,
     case OptionDirection::Short:
         sign = -1.0;
         break;
+    default:
+        throw std::invalid_argument("invalid OptionDirection");
     }
 
     double expectedPayoff = sign * sumPayoffs / simParams.nPaths;
