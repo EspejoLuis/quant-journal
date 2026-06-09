@@ -161,32 +161,44 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 
 ### Engines and file structure
 
-Two shared header-only engines are built incrementally — one function at a time, only when a product actually needs it:
+```text
+code/cpp/src/
+├── common/
+│   └── modelParameters.h     ← shared structs (ModelParameters, SimulationParameters)
+├── engine/
+│   ├── engine.h              ← abstract base: virtual price(const Instrument&) = 0
+│   ├── monteCarloEngine.h/cpp ← derives Engine; GBM path generator + price() via instrument.payoff()
+│   ├── bsPricingEngine.h/cpp  ← derives Engine; analytic BS closed-form (planned)
+│   └── pdePricingEngine.h/cpp ← derives Engine; 1D CN / 2D ADI (planned)
+└── product/
+    ├── instrument.h           ← abstract base: virtual payoff(const vector<double>&) = 0
+    └── vanillaEuropeanOption.h/cpp ← derives Instrument
+```
 
-**`code/cpp/mc_engine.h`** — Monte Carlo path generators and pricers.
-Grows one function per block:
+**Design principles:**
+
+- `Engine` defines *how* to price (MC, BS, PDE) — pure virtual `price(const Instrument&)`
+- `Instrument` defines *what* to price — pure virtual `payoff(const vector<double>& path)`
+- `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency
+- MC engines call `instrument.payoff(path)` per path; BS/PDE engines implement `price()` directly without using `payoff()`
+
+**`monteCarloEngine` grows one function per block:**
 
 - `simulateGbmPath()` — GBM (flat vol, Black-Scholes world)
 - `simulateLocalVolPath()` — σ(S,t) surface, bilinear interpolation at each Euler step
 - `simulateHestonPath()` — Euler-Milstein on (S,v) pair with variance reflection
 - `simulateSlvPath()` — Heston variance multiplied by leverage function L(S,t)
 - `simulateCorrelatedGbmPath()` — 2-asset GBM via Cholesky decomposition
-- `priceLsm()` — Longstaff-Schwartz American MC; regress continuation value on basis functions at each exercise date, work backward to find optimal stopping
+- `priceLsm()` — Longstaff-Schwartz American MC
 
 **RNG options to consider:** Mersenne Twister (`std::mt19937`) for pseudo-random; Sobol sequences for quasi-Monte Carlo (lower discrepancy, faster convergence).
 
 **Variance reduction techniques to integrate:** antithetic variates, control variates, importance sampling.
 
-**`code/cpp/pde_engine.h`** — Finite-difference solvers:
+**PDE solvers** (in `pdePricingEngine`):
 
 - 1D Crank-Nicolson with Thomas algorithm (tridiagonal solve)
 - 2D Craig-Sneyd ADI for the Heston/SLV PDE in (S,v)
-
-**Model and product files** are standalone `.cc` files that `#include` the two headers above and nothing else. Each compiles and runs with:
-
-```bash
-g++ -std=c++20 <file>.cpp -o out && ./out
-```
 
 ---
 
