@@ -6,7 +6,7 @@ McEngine::McEngine(const ModelParameters& modelParams,
                    const SimulationParameters& simParams)
     : modelParams_(modelParams), simParams_(simParams) {
 
-    validateGbmInputs();
+    validateInputs();
 };
 
 double McEngine::price(const Instrument& instrument) {
@@ -62,7 +62,7 @@ std::vector<std::vector<double>> McEngine::simulateGbmPath() {
     return simulatedPrices;
 };
 
-void McEngine::validateGbmInputs() {
+void McEngine::validateInputs() {
 
     if (modelParams_.underlyingPrice < 0.0)
         throw std::invalid_argument("underlying price cannot be negative");

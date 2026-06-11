@@ -3,7 +3,7 @@
 #include <catch2/catch_all.hpp>
 #include <numeric>
 
-TEST_CASE("validateGbmInputs returns error. Incorrec SimulationParameters ",
+TEST_CASE("validateInputs returns error. Incorrec SimulationParameters ",
           "[monteCarloEngine]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
@@ -26,7 +26,7 @@ TEST_CASE("validateGbmInputs returns error. Incorrec SimulationParameters ",
     REQUIRE_THROWS_AS(McEngine(modelParams, simParams), std::invalid_argument);
 }
 
-TEST_CASE("validateGbmInputs returns error. Incorrec ModelParameters ",
+TEST_CASE("validateInputs returns error. Incorrec ModelParameters ",
           "[monteCarloEngine]") {
 
     auto [s0, r, q, sigma, T] =
