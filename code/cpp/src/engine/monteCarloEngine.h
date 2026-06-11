@@ -1,30 +1,34 @@
 // monteCarloEngine.h - Monte Carlo generator.
 #pragma once
+#include "engine.h"
+#include "modelParameters.h"
 #include <optional>
 #include <random>
 #include <vector>
-
-struct ModelParameters {
-    double underlyingPrice;
-    double interestRate;
-    double dividendRate;
-    double volatility;
-    double maturityInYears;
-};
-
 struct SimulationParameters {
     int nPaths;
     int nSteps;
     std::optional<unsigned int> seed;
 };
 
-void validateGbmInputs(const ModelParameters& modelParams,
-                       const SimulationParameters& simParams);
+class McEngine : public Engine {
 
-// Returns matrix of nPaths x nSteps
-std::vector<std::vector<double>> simulateGbmPath(
-    const ModelParameters& modelParams, const SimulationParameters& simParams);
+  public:
+    McEngine(const ModelParameters& modelParams,
+             const SimulationParameters& simParams);
 
-std::mt19937 createRng(unsigned int seed);
+    double price(const Instrument& instrument) override;
 
-std::mt19937 createRng();
+  private:
+    const ModelParameters modelParams_;
+    const SimulationParameters simParams_;
+
+    // Returns matrix of nPaths x nSteps
+    std::vector<std::vector<double>> simulateGbmPath();
+
+    void validateGbmInputs();
+
+    std::mt19937 createRng(unsigned int seed);
+
+    std::mt19937 createRng();
+};

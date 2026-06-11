@@ -1,5 +1,5 @@
 #pragma once
-#include "monteCarloEngine.h"
+#include "instrument.h"
 
 enum class OptionType { Call, Put };
 enum class OptionDirection { Long, Short };
@@ -10,6 +10,13 @@ struct OptionParameters {
     OptionDirection direction;
 };
 
-double priceEuropeanVanillaOption(const ModelParameters& modelParams,
-                                  const SimulationParameters& simParams,
-                                  const OptionParameters& optParams);
+class VanillaEuropeanOption : public Instrument {
+
+  public:
+    VanillaEuropeanOption(const OptionParameters& optParams);
+
+    double payoff(const std::vector<double>& path) const override;
+
+  private:
+    const OptionParameters optParams_;
+};

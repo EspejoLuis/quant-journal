@@ -5,6 +5,6 @@
 class Engine {
 
   public:
-    virtual double price(const Instrument&) = 0;
+    virtual double price(const Instrument& instrument) = 0;
     virtual ~Engine() = default;
 };
