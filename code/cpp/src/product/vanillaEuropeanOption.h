@@ -17,6 +17,8 @@ class VanillaEuropeanOption : public Instrument {
 
     double payoff(const std::vector<double>& path) const override;
 
+    const OptionParameters& parameters() const;
+
   private:
     const OptionParameters optParams_;
 };

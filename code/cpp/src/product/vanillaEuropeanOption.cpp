@@ -44,3 +44,7 @@ double VanillaEuropeanOption::payoff(const std::vector<double>& path) const {
 
     return sign * payoff;
 }
+
+const OptionParameters& VanillaEuropeanOption::parameters() const {
+    return optParams_;
+};
