@@ -15,8 +15,12 @@
 
 4. **Memory files** — update `project_progress.md` to reflect what was completed and what is still pending. Update the relevant week memory file if files were created or moved. Update any other memory file that has become stale.
 
-5. **CLAUDE.md** — update the file structure section or weekly schedule if the session introduced architectural changes or if we drifted from the planned schedule.
+5. **CLAUDE.md** — update the file structure section or weekly schedule if the session introduced architectural changes or if we drifted from the planned schedule. Also, this file [[Modern-Computational-Finance-AAD-and-Parallel-Simulations]] is going to be updated frequently with new updates. so compare the plan defined in CLAUDE.md with the information in that file. For example is the file says how performace can be improved using threads and parallel computing then the plan in CLAUDE.md needs to change accordingly.
 
 6. **README.md** — check if any new files, notes, or products were added that should be reflected in the tables (Models, Numerical Methods, Products, Notes). Also check if all links the notes in `notes` folder are present in the README.md file.
 
-Use the style of previous log entries. Do not ask for confirmation on each step unless explicitly stated in the step. Complete all steps and report a summary at the end for each point.
+7. **Anki Cards** - check sections `key points` and `coding` defined in point 1 and compare them with my existing Anki cards. If there are existing Anki cards that are linked to what has been reviewed during the session, add the tag `reviewFromQuantJournal` to those cards. If there no existing cards linked to what has been reviewed during the session, create Anki Cards using preexistent tags. Add new tags only if no tags represeting what has been reviewed can be found.
+
+Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6 unless explicitly stated in the step. For point 7 you have to tell me which cards are you planning to add with a summary, I will confrim or not. Complete all steps and report a summary at the end for each point.
+
+[Modern-Computational-Finance-AAD-and-Parallel-Simulations]: ../../books/Modern-Computational-Finance-AAD-and-Parallel-Simulations.md "AAD and // Simulation"
