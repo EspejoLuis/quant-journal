@@ -12,18 +12,18 @@ find_package(Catch2 REQUIRED)
 # Define a library target (.a) named 'quantJournal' made from cpp file
 # This will compile src/monteCarloEngine.cpp into a reusable static library
 set(SOURCES
-    src/monteCarloEngine.cpp
+    src/engine/monteCarloEngine.cpp
     src/product/vanillaEuropeanOption.cpp
 )
 add_library(quantJournal ${SOURCES})
 # Specify the include directory for the quantJournal library
 # Any target that links to quantJournal will be able to find headers here.
-target_include_directories(quantJournal PUBLIC src/ src/product)
+target_include_directories(quantJournal PUBLIC src/engine src/product src/common)
 
 ##### Unit Test EXECUTABLE #####
 # Define an executable target named 'monteCarloEngineUnit'
 # This is your Catch2 test runner
-add_executable(monteCarloEngineUnit tests/unit/monteCarloEngine.cpp)
+add_executable(monteCarloEngineUnit tests/unit/engine/monteCarloEngine.cpp)
 add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
 
 # Include directories needed to compile 'monteCarloEngineUnit'

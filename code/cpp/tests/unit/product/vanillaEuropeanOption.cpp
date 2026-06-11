@@ -1,9 +1,10 @@
 #include "vanillaEuropeanOption.h"
+#include "monteCarloEngine.h"
 #include <catch2/catch_all.hpp>
 #include <numeric>
 #include <stdexcept>
 
-TEST_CASE("priceEuropeanVanillaOption returns correct. Long Put-Call parity",
+TEST_CASE("VanillaEuropeanOption returns correct. Long Put-Call parity",
           "[vanillaEuropeanOption]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
@@ -27,11 +28,14 @@ TEST_CASE("priceEuropeanVanillaOption returns correct. Long Put-Call parity",
         .direction = OptionDirection::Long,
     };
 
-    double putPrice =
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsPut);
+    McEngine mcEngine = McEngine{modelParams, simParams};
 
-    double callPrice =
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsCall);
+    VanillaEuropeanOption vanillaCall = VanillaEuropeanOption{optionParamsCall};
+    VanillaEuropeanOption vanillaPut = VanillaEuropeanOption{optionParamsPut};
+
+    double callPrice = mcEngine.price(vanillaCall);
+
+    double putPrice = mcEngine.price(vanillaPut);
 
     REQUIRE(callPrice - putPrice ==
             Catch::Approx(modelParams.underlyingPrice *
@@ -42,29 +46,7 @@ TEST_CASE("priceEuropeanVanillaOption returns correct. Long Put-Call parity",
                 .epsilon(1e-10));
 }
 
-TEST_CASE("priceEuropeanVanillaOption returns error. Negative Strike.",
-          "[vanillaEuropeanOption]") {
-
-    ModelParameters modelParams{.underlyingPrice = 100.0,
-                                .interestRate = 0.02,
-                                .dividendRate = 0.05,
-                                .volatility = 0.0,
-                                .maturityInYears = 1.0};
-
-    SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
-
-    OptionParameters optionParamsCall{
-        .strike = -10,
-        .type = OptionType::Call,
-        .direction = OptionDirection::Long,
-    };
-
-    REQUIRE_THROWS_AS(
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsCall),
-        std::invalid_argument);
-}
-
-TEST_CASE("priceEuropeanVanillaOption returns correct. Short Put-Call parity.",
+TEST_CASE("VanillaEuropeanOption returns correct. Short Put-Call parity.",
           "[vanillaEuropeanOption]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
@@ -88,11 +70,14 @@ TEST_CASE("priceEuropeanVanillaOption returns correct. Short Put-Call parity.",
         .direction = OptionDirection::Short,
     };
 
-    double putPrice =
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsPut);
+    McEngine mcEngine = McEngine{modelParams, simParams};
 
-    double callPrice =
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsCall);
+    VanillaEuropeanOption vanillaCall = VanillaEuropeanOption{optionParamsCall};
+    VanillaEuropeanOption vanillaPut = VanillaEuropeanOption{optionParamsPut};
+
+    double callPrice = mcEngine.price(vanillaCall);
+
+    double putPrice = mcEngine.price(vanillaPut);
 
     REQUIRE(callPrice - putPrice ==
             -Catch::Approx(modelParams.underlyingPrice *
@@ -103,16 +88,8 @@ TEST_CASE("priceEuropeanVanillaOption returns correct. Short Put-Call parity.",
                  .epsilon(1e-10));
 }
 
-TEST_CASE("priceEuropeanVanillaOption returns error. invalid OptionType.",
+TEST_CASE("VanillaEuropeanOption returns error. invalid OptionType.",
           "[vanillaEuropeanOption]") {
-
-    ModelParameters modelParams{.underlyingPrice = 100.0,
-                                .interestRate = 0.02,
-                                .dividendRate = 0.05,
-                                .volatility = 0.0,
-                                .maturityInYears = 1.0};
-
-    SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
     OptionParameters optionParamsCall{
         .strike = 10,
@@ -120,21 +97,12 @@ TEST_CASE("priceEuropeanVanillaOption returns error. invalid OptionType.",
         .direction = OptionDirection::Long,
     };
 
-    REQUIRE_THROWS_AS(
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsCall),
-        std::invalid_argument);
+    REQUIRE_THROWS_AS(VanillaEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
 }
 
-TEST_CASE("priceEuropeanVanillaOption returns error. invalid OptionDirection.",
+TEST_CASE("VanillaEuropeanOption returns error. invalid OptionDirection.",
           "[vanillaEuropeanOption]") {
-
-    ModelParameters modelParams{.underlyingPrice = 100.0,
-                                .interestRate = 0.02,
-                                .dividendRate = 0.05,
-                                .volatility = 0.0,
-                                .maturityInYears = 1.0};
-
-    SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
     OptionParameters optionParamsCall{
         .strike = 10,
@@ -142,7 +110,19 @@ TEST_CASE("priceEuropeanVanillaOption returns error. invalid OptionDirection.",
         .direction = static_cast<OptionDirection>(99),
     };
 
-    REQUIRE_THROWS_AS(
-        priceEuropeanVanillaOption(modelParams, simParams, optionParamsCall),
-        std::invalid_argument);
+    REQUIRE_THROWS_AS(VanillaEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
+}
+
+TEST_CASE("VanillaEuropeanOption returns error. Negative Strike.",
+          "[vanillaEuropeanOption]") {
+
+    OptionParameters optionParamsCall{
+        .strike = -10,
+        .type = OptionType::Call,
+        .direction = OptionDirection::Long,
+    };
+
+    REQUIRE_THROWS_AS(VanillaEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
 }
