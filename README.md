@@ -12,7 +12,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | ----- | ------- | ----- | ------ |
 | **GBM (Black-Scholes)** | [Path simulation (`simulateGbmPath`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
 | | Antithetic variates | — | Planned |
-| | Closed-form benchmark | — | Planned |
+| | [Closed-form (`BsCloseForm`)](code/cpp/src/engine/blackScholesEngine.cpp) | — | In progress |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | Planned |
 | | Forward PDE calibration | — | Planned |
 | **Heston** | Euler-Milstein with variance reflection | — | Planned |

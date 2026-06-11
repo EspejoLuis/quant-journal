@@ -169,22 +169,23 @@ code/cpp/src/
 │   ├── engine.h              ← abstract base: virtual double price(const Instrument&) = 0
 │   ├── monteCarloEngine.h    ← SimulationParameters struct + McEngine class (derives Engine)
 │   ├── monteCarloEngine.cpp  ← McEngine::price(), simulateGbmPath(), validateGbmInputs(), createRng() (private)
-│   ├── bsPricingEngine.h/cpp  ← derives Engine; analytic BS closed-form (planned)
+│   ├── blackScholesEngine.h/cpp ← BsCloseForm class; does NOT derive Engine (takes VanillaEuropeanOption directly); normalCdf file-static
 │   └── pdePricingEngine.h/cpp ← derives Engine; 1D CN / 2D ADI (planned)
 └── product/
     ├── instrument.h           ← abstract base: virtual double payoff(const vector<double>& path) const = 0
-    └── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() is a single-path switch
+    └── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() single-path switch; parameters() getter returns const OptionParameters&
 ```
 
 **Design principles:**
 
-- `Engine` defines *how* to price (MC, BS, PDE) — pure virtual `price(const Instrument&)`
+- `Engine` defines *how* to price (MC, PDE) — pure virtual `price(const Instrument&)`
 - `Instrument` defines *what* to price — pure virtual `payoff(const vector<double>& path) const`
 - `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency
 - `SimulationParameters` lives in `monteCarloEngine.h` — MC-specific; BS/PDE engines don't need it
 - `McEngine` stores `ModelParameters` and `SimulationParameters` as private value members, validated in the constructor
 - `McEngine::price()` computes discount factor per path inside the loop — ready for stochastic interest rates
 - MC engines call `instrument.payoff(path)` per path; BS/PDE engines implement `price()` directly without using `payoff()`
+- `BsCloseForm` does NOT derive `Engine` — analytic engines need instrument-specific parameters (strike, type) that are not on the `Instrument` interface; forcing them through would require `dynamic_cast`
 - `simulateGbmPath`, `validateGbmInputs`, `createRng` are private methods of `McEngine` — tested through `price()`
 
 **`monteCarloEngine` grows one function per block:**
@@ -472,7 +473,7 @@ Code: `code/cpp/models/heston.cpp`
 
 **RNG upgrade:** swap `std::mt19937` for Sobol sequences. Compare convergence: O(1/N) quasi-MC vs O(1/√N) standard MC.
 
-**From the book:** parallelize Heston MC with `std::thread`. Each thread gets its own RNG state. Use `std::atomic<double>` or a mutex to accumulate. Compare 1, 2, 4 threads.
+**From the book:** parallelize Heston MC with `std::thread`. Each thread gets its own RNG state. Use `std::atomic<double>` or a mutex to accumulate. Compare 1, 2, 4 threads. Watch for **false sharing** — if per-thread accumulators are packed on the same 64-byte cache line, writing one invalidates the other thread's cache. Fix with `alignas(64)` on accumulator variables.
 
 **QuantLib:** `HestonModel`, `AnalyticHestonEngine`, `FdHestonVanillaEngine`
 
