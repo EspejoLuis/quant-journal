@@ -5,6 +5,7 @@
 #include <optional>
 #include <random>
 #include <vector>
+
 struct SimulationParameters {
     int nPaths;
     int nSteps;
@@ -26,7 +27,7 @@ class McEngine : public Engine {
     // Returns matrix of nPaths x nSteps
     std::vector<std::vector<double>> simulateGbmPath();
 
-    void validateGbmInputs();
+    void validateInputs();
 
     std::mt19937 createRng(unsigned int seed);
 
