@@ -10,7 +10,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Model | Feature | Tests | Status |
 | ----- | ------- | ----- | ------ |
-| **GBM (Black-Scholes)** | [Path simulation (`simulateGbmPath`)](code/cpp/src/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/monteCarloEngine.cpp) | In progress |
+| **GBM (Black-Scholes)** | [Path simulation (`simulateGbmPath`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
 | | Antithetic variates | — | Planned |
 | | Closed-form benchmark | — | Planned |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | Planned |
@@ -28,7 +28,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Method | Feature | Tests | Status |
 | ------ | ------- | ----- | ------ |
-| **Monte Carlo** | [GBM engine](code/cpp/src/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/monteCarloEngine.cpp) | In progress |
+| **Monte Carlo** | [GBM engine (`McEngine`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
 | | Antithetic variates | — | Planned |
 | | Quasi-MC with Sobol sequences | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | Planned |
@@ -69,3 +69,5 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 - [GBM Expectation Under Risk-Neutral Measure](notes/random-notes/gbm-expectation.md)
 - [Stochastic Exponential](notes/random-notes/stochastic-exponential.md)
+- [Normal CDF via erf](notes/random-notes/normal-cdf-erf.md)
+- [Black-Scholes Formula](notes/random-notes/black-scholes-formula.md)
