@@ -80,11 +80,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_compile_options(quantJournal           PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(monteCarloEngineUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(vanillaEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(blackScholesCloseFormUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
 
     # --- 2) Add linker flags for coverage ---
     target_link_options(quantJournal           PRIVATE -fprofile-instr-generate)
     target_link_options(monteCarloEngineUnit PRIVATE -fprofile-instr-generate)
     target_link_options(vanillaEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(blackScholesCloseFormUnit PRIVATE -fprofile-instr-generate)
 
     # Paths/patterns to ignore from reports (tests + Catch header)
     set(ignore_regex_tests ".*/tests/")
@@ -99,7 +101,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     add_custom_target(
         coverage
         # Start clean: remove previous coverage artifacts so paths map cleanly
-        COMMAND ${CMAKE_COMMAND} -E remove -f monteCarloEngine.profraw vanillaEuropeanOption.profraw merged.profdata
+        COMMAND ${CMAKE_COMMAND} -E remove -f 
+        monteCarloEngine.profraw 
+        vanillaEuropeanOption.profraw 
+        blackScholesCloseForm.profraw
+        merged.profdata
         COMMAND ${CMAKE_COMMAND} -E remove_directory coverage_html
 
         # Run UNIT tests -> unit.profraw
@@ -107,14 +113,21 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:monteCarloEngineUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=vanillaEuropeanOption.profraw
                 $<TARGET_FILE:vanillaEuropeanOptionUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=blackScholesCloseForm.profraw
+                $<TARGET_FILE:blackScholesCloseFormUnit>
 
         # Merge profiles
-        COMMAND xcrun llvm-profdata merge -sparse monteCarloEngine.profraw vanillaEuropeanOption.profraw -o merged.profdata
+        COMMAND xcrun llvm-profdata merge -sparse 
+        monteCarloEngine.profraw 
+        vanillaEuropeanOption.profraw 
+        blackScholesCloseForm.profraw
+        -o merged.profdata
 
         # Generate a terminal coverage summary report for BOTH binaries
         COMMAND xcrun llvm-cov report
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
+                -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -instr-profile=merged.profdata
                 -ignore-filename-regex=${ignore_regex_tests}
                 -ignore-filename-regex=${ignore_regex_catch}
@@ -128,6 +141,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} xcrun llvm-cov show
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
+                -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -instr-profile=${CMAKE_BINARY_DIR}/merged.profdata
                 -format=html
                 -output-dir=${CMAKE_BINARY_DIR}/coverage_html
@@ -146,7 +160,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 
         # Ensure BOTH tests are built before running coverage
-        DEPENDS monteCarloEngineUnit vanillaEuropeanOptionUnit
+        DEPENDS monteCarloEngineUnit vanillaEuropeanOptionUnit blackScholesCloseFormUnit
 
         COMMENT "Running unit + integration with LLVM coverage and generating merged terminal + HTML reports (with branch details)"
     )
