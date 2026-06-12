@@ -23,10 +23,9 @@ double McEngine::price(const Instrument& instrument) {
             instrument.payoff(path) * deterministicDiscountFactor;
     }
 
-    return sumPayoffsDiscounted / simParams_.nPaths;
+    return sumPayoffsDiscounted / simulatedPaths.size();
 };
 
-// Returns matrix of nPaths x nSteps
 std::vector<std::vector<double>> McEngine::simulateGbmPath() {
 
     const double s0 = modelParams_.underlyingPrice;
@@ -38,28 +37,56 @@ std::vector<std::vector<double>> McEngine::simulateGbmPath() {
     const int nSteps = simParams_.nSteps;
     const int nPaths = simParams_.nPaths;
     const std::optional<unsigned int> seed = simParams_.seed;
-
-    std::vector<std::vector<double>> simulatedPrices(
-        nPaths, std::vector<double>(nSteps + 1, s0));
+    const std::optional<VarianceReduction> varReduction =
+        simParams_.varianceReduction;
 
     // Standard Normal Distribution
     std::normal_distribution<double> distr(0.0, 1.0);
     std::mt19937 rng = seed ? createRng(*seed) : createRng();
 
     const double dt = T / nSteps;
+    const double expFactor =
+        std::exp((r - q) * dt - 1.0 / 2.0 * vol * vol * dt);
+    const double volTime = vol * std::sqrt(dt);
 
-    for (int i = 0; i < nPaths; i++) {
-        for (int j = 0; j < nSteps; j++) {
+    if (varReduction && varReduction == VarianceReduction::Antithetic) {
 
-            double z = distr(rng);
+        const int nPathAdjusted = nPaths * 2;
 
-            simulatedPrices[i][j + 1] =
-                simulatedPrices[i][j] *
-                std::exp((r - q) * dt - 1.0 / 2.0 * vol * vol * dt +
-                         vol * std::sqrt(dt) * z);
+        std::vector<std::vector<double>> simulatedPrices(
+            nPathAdjusted, std::vector<double>(nSteps + 1, s0));
+
+        for (int i = 0; i < nPaths; i++) {
+            for (int j = 0; j < nSteps; j++) {
+
+                double z = distr(rng);
+
+                simulatedPrices[i][j + 1] =
+                    simulatedPrices[i][j] * expFactor * std::exp(volTime * z);
+
+                simulatedPrices[nPathAdjusted - 1 - i][j + 1] =
+                    simulatedPrices[nPathAdjusted - 1 - i][j] * expFactor *
+                    std::exp(volTime * -z);
+            }
         }
+        return simulatedPrices;
+
+    } else {
+
+        std::vector<std::vector<double>> simulatedPrices(
+            nPaths, std::vector<double>(nSteps + 1, s0));
+
+        for (int i = 0; i < nPaths; i++) {
+            for (int j = 0; j < nSteps; j++) {
+
+                double z = distr(rng);
+
+                simulatedPrices[i][j + 1] =
+                    simulatedPrices[i][j] * expFactor * std::exp(volTime * z);
+            };
+        }
+        return simulatedPrices;
     }
-    return simulatedPrices;
 };
 
 void McEngine::validateInputs() {
