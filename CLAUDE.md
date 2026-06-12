@@ -374,7 +374,7 @@ Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique 
 - American barrier option — barrier knock-out + early exercise; compare to European barrier price
 - American lookback — early exercise on running max/min; significantly more expensive than European
 
-**From the book:** LSM regression is embarrassingly parallel per path during the forward simulation. The backward regression pass is sequential but cheap.
+**From the book:** LSM forward simulation is embarrassingly parallel per path. The backward regression pass is NOT simply sequential — in a multi-threaded context it requires a synchronization barrier: all threads pause their path work, one thread runs the regression across all paths, then threads resume. The thread pool + condition variable machinery from Ch. 3 is exactly what implements this barrier correctly.
 
 ---
 

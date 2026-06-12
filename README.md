@@ -11,8 +11,8 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Model | Feature | Tests | Status |
 | ----- | ------- | ----- | ------ |
 | **GBM (Black-Scholes)** | [Path simulation (`simulateGbmPath`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | Antithetic variates | — | Planned |
-| | [Closed-form (`BsCloseForm`)](code/cpp/src/engine/blackScholesEngine.cpp) | — | In progress |
+| | Antithetic variates (`VarianceReduction::Antithetic`) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
+| | [Closed-form (`BsCloseForm`)](code/cpp/src/engine/blackScholesCloseForm.cpp) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp) | In progress |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | Planned |
 | | Forward PDE calibration | — | Planned |
 | **Heston** | Euler-Milstein with variance reflection | — | Planned |
@@ -29,7 +29,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Method | Feature | Tests | Status |
 | ------ | ------- | ----- | ------ |
 | **Monte Carlo** | [GBM engine (`McEngine`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | Antithetic variates | — | Planned |
+| | Antithetic variates | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
 | | Quasi-MC with Sobol sequences | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | Planned |
 | **Finite Differences** | 1D Crank-Nicolson (BS PDE) | — | Planned |
