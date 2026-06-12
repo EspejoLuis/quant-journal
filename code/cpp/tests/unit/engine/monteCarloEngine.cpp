@@ -1,4 +1,5 @@
 #include "monteCarloEngine.h"
+#include "blackScholesCloseForm.h"
 #include "vanillaEuropeanOption.h"
 #include <catch2/catch_all.hpp>
 #include <numeric>
@@ -84,8 +85,10 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
                 .epsilon(1e-10));
 }
 
-TEST_CASE("simulateGbmPath returns correct. Fixed seed. Positive volatility",
-          "[monteCarloEngine]") {
+TEST_CASE(
+    "simulateGbmPath returns price withing 1 percent vs Black Scholes. Fixed "
+    "seed. Positive volatility",
+    "[monteCarloEngine]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
@@ -106,10 +109,21 @@ TEST_CASE("simulateGbmPath returns correct. Fixed seed. Positive volatility",
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
+
+    double mcPrice = mcEng.price(vanillaOption);
+
+    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+
+    double bsPrice = bsCloseForm.price(vanillaOption);
+
+    REQUIRE(mcPrice ==
+            Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
 }
 
-TEST_CASE("simulateGbmPath returns correct. No Seed. Positive volatility",
-          "[monteCarloEngine]") {
+TEST_CASE(
+    "SimulateGbmPath returns price withing 1 percent vs Black Scholes. No "
+    "Seed. Positive volatility",
+    "[monteCarloEngine]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
@@ -117,7 +131,7 @@ TEST_CASE("simulateGbmPath returns correct. No Seed. Positive volatility",
                                 .volatility = 0.2,
                                 .maturityInYears = 1.0};
 
-    SimulationParameters simParams{.nPaths = 1'000, .nSteps = 10};
+    SimulationParameters simParams{.nPaths = 100'000, .nSteps = 100};
 
     OptionParameters optionParamsCall{
         .strike = 10,
@@ -129,4 +143,13 @@ TEST_CASE("simulateGbmPath returns correct. No Seed. Positive volatility",
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
+
+    double mcPrice = mcEng.price(vanillaOption);
+
+    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+
+    double bsPrice = bsCloseForm.price(vanillaOption);
+
+    REQUIRE(mcPrice ==
+            Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
 }
