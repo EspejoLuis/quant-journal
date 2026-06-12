@@ -15,7 +15,7 @@
 
 4. **Memory files** — update `project_progress.md` to reflect what was completed and what is still pending. Update the relevant week memory file if files were created or moved. Update any other memory file that has become stale.
 
-5. **CLAUDE.md** — update the file structure section or weekly schedule if the session introduced architectural changes or if we drifted from the planned schedule.
+5. **CLAUDE.md** — update the file structure section or weekly schedule if the session introduced architectural changes or if we drifted from the planned schedule. Estimate if the dates of the plan are still fine or if they need to be extended or shorten.
 
 6. This file [[Modern-Computational-Finance-AAD-and-Parallel-Simulations]] is going to be updated frequently but not every day with new updates. so compare the plan defined in CLAUDE.md with the information in this file. For example if the file says how performace can be improved using threads and parallel computing then the plan in CLAUDE.md needs to change accordingly. Skip the CLAUDE.md update if the information from the book has already been incorporated.
 
