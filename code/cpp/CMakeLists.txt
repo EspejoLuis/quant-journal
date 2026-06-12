@@ -9,32 +9,53 @@ include(CTest)
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(Catch2 REQUIRED)
-# Define a library target (.a) named 'quantJournal' made from cpp file
-# This will compile src/monteCarloEngine.cpp into a reusable static library
+
+# List the .cpp files to compile. Each becomes a .o object file; all .o files
+# are archived together into the static library libquantJournal.a below.
 set(SOURCES
     src/engine/monteCarloEngine.cpp
+    src/engine/blackScholesCloseForm.cpp
     src/product/vanillaEuropeanOption.cpp
 )
+
+# Compile SOURCES into a static library: libquantJournal.a
+# All production code lives here — test executables link against this archive.
 add_library(quantJournal ${SOURCES})
-# Specify the include directory for the quantJournal library
-# Any target that links to quantJournal will be able to find headers here.
+
+# Tell CMake which folders to search when resolving #include directives for
+# quantJournal and any target that links it (PUBLIC propagates to dependents).
+# Without this, #include "blackScholesEngine.h" would fail to resolve.
 target_include_directories(quantJournal PUBLIC src/engine src/product src/common)
 
-##### Unit Test EXECUTABLE #####
-# Define an executable target named 'monteCarloEngineUnit'
-# This is your Catch2 test runner
-add_executable(monteCarloEngineUnit tests/unit/engine/monteCarloEngine.cpp)
+# --- Unit test executables ---
+# Each add_executable compiles one test .cpp into a standalone binary (.out /
+# no extension on macOS). Catch2WithMain supplies the main() entry point so the
+# test file only needs TEST_CASE blocks.
+add_executable(monteCarloEngineUnit    tests/unit/engine/monteCarloEngine.cpp)
+add_executable(blackScholesCloseFormUnit  tests/unit/engine/blackScholesCloseForm.cpp)
 add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
 
-# Include directories needed to compile 'monteCarloEngineUnit'
-target_include_directories(monteCarloEngineUnit PRIVATE tests/unit)
+# Add tests/unit to each executable's include path (PRIVATE = only this target
+# sees it). Needed for any shared test helpers living under tests/unit/.
+# The production headers (src/engine, src/product, src/common) are inherited
+# automatically from the quantJournal library via PUBLIC above.
+target_include_directories(monteCarloEngineUnit    PRIVATE tests/unit)
+target_include_directories(blackScholesCloseFormUnit  PRIVATE tests/unit)
 target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
 
-# Link the quantJournal library into the 'monteCarloEngineUnit' executable
-target_link_libraries(monteCarloEngineUnit quantJournal Catch2::Catch2WithMain)
+# Link each test binary against:
+#   quantJournal         — the static lib (.a) with all production .o files
+#   Catch2::Catch2WithMain — Catch2's static lib that provides main()
+# The linker resolves every symbol used in the test .o against these archives.
+target_link_libraries(monteCarloEngineUnit    quantJournal Catch2::Catch2WithMain)
+target_link_libraries(blackScholesCloseFormUnit  quantJournal Catch2::Catch2WithMain)
 target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
 
-add_test(NAME monteCarloEngineUnit COMMAND monteCarloEngineUnit)
+# Register each binary with CTest so `ctest` (or the VS Code TestMate runner)
+# knows what command to run. NAME is the label shown in test output; COMMAND is
+# the binary to execute.
+add_test(NAME monteCarloEngineUnit    COMMAND monteCarloEngineUnit)
+add_test(NAME blackScholesCloseFormUnit  COMMAND blackScholesCloseFormUnit)
 add_test(NAME vanillaEuropeanOptionUnit COMMAND vanillaEuropeanOptionUnit)
 
 
