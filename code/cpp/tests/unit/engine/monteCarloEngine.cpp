@@ -70,7 +70,7 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
     OptionParameters optionParamsCall{
-        .strike = 10,
+        .strike = 87,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
     };
@@ -95,7 +95,7 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
 }
 
 TEST_CASE(
-    "simulateGbmPath returns price withing 1 percent vs Black Scholes. Fixed "
+    "simulateGbmPath returns price within 1 percent vs Black Scholes. Fixed "
     "seed. Positive volatility",
     "[monteCarloEngine]") {
 
@@ -109,7 +109,7 @@ TEST_CASE(
         .nPaths = 100'000, .nSteps = 100, .seed = 11};
 
     OptionParameters optionParamsCall{
-        .strike = 10,
+        .strike = 87,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
     };
@@ -129,10 +129,9 @@ TEST_CASE(
             Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
 }
 
-TEST_CASE(
-    "SimulateGbmPath returns price withing 1 percent vs Black Scholes. No "
-    "Seed. Positive volatility",
-    "[monteCarloEngine]") {
+TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes. No "
+          "Seed. Positive volatility",
+          "[monteCarloEngine]") {
 
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
@@ -143,7 +142,7 @@ TEST_CASE(
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 100};
 
     OptionParameters optionParamsCall{
-        .strike = 10,
+        .strike = 85,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
     };
@@ -163,7 +162,8 @@ TEST_CASE(
             Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
 }
 
-TEST_CASE("SimulateGbmPath with Antithetic variable variance reduction . No "
+TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
+          "reduction . No "
           "Seed. Positive volatility",
           "[monteCarloEngine]") {
 
@@ -202,4 +202,36 @@ TEST_CASE("SimulateGbmPath with Antithetic variable variance reduction . No "
 
     REQUIRE(sampleStandardDeviation(mcPrices) >
             sampleStandardDeviation(mcPricesVarianceReduction));
+}
+
+TEST_CASE("SimulateGbmPath with Antithetic Variates returns price within 1 "
+          "percent vs Black Scholes"
+          "[monteCarloEngine]") {
+
+    ModelParameters modelParams{.underlyingPrice = 100.0,
+                                .interestRate = 0.02,
+                                .dividendRate = 0.05,
+                                .volatility = 0.2,
+                                .maturityInYears = 1.0};
+
+    SimulationParameters simParamsVarRed{.nPaths = 100'000,
+                                         .nSteps = 10,
+                                         .seed = 19,
+                                         .varianceReduction =
+                                             VarianceReduction::Antithetic};
+
+    OptionParameters optionParamsCall{
+        .strike = 95,
+        .type = OptionType::Call,
+        .direction = OptionDirection::Long,
+    };
+
+    McEngine mcEngVarRed = McEngine{modelParams, simParamsVarRed};
+    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+
+    VanillaEuropeanOption vanillaOption =
+        VanillaEuropeanOption{optionParamsCall};
+
+    REQUIRE(mcEngVarRed.price(vanillaOption) ==
+            Catch::Approx(bsCloseForm.price(vanillaOption)).epsilon(0.01));
 }
