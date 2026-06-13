@@ -8,9 +8,9 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Model | Feature | `.h` | `.cpp` | Tests | Status |
 | ----- | ------- | ---- | ------ | ----- | ------ |
-| **GBM** | Path simulation (`simulateGbmPath`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L35) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L29) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | In progress |
-| | Antithetic variates (`VarianceReduction::Antithetic`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | In progress |
-| | Closed-form (`BsCloseForm`) | [.h](code/cpp/src/engine/blackScholesCloseForm.h#L7) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp#L8) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp#L5) | In progress |
+| **GBM** | Path simulation (`simulateGbmPath`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L35) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L29) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | Done |
+| | Antithetic variates (`VarianceReduction::Antithetic`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
+| | Closed-form (`BsCloseForm`) | [.h](code/cpp/src/engine/blackScholesCloseForm.h#L7) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp#L8) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp#L5) | Done |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | — | — | Planned |
 | | Forward PDE calibration | — | — | — | Planned |
 | **Heston** | Euler-Milstein with variance reflection | — | — | — | Planned |
@@ -24,8 +24,8 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Method | Feature | `.h` | `.cpp` | Tests | Status |
 | ------ | ------- | ---- | ------ | ----- | ------ |
-| **Monte Carlo** | GBM engine (`McEngine`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L22) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L12) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L8) | In progress |
-| | Antithetic variates | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | In progress |
+| **Monte Carlo** | GBM engine (`McEngine`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L22) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L12) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L8) | Done |
+| | Antithetic variates | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
 | | Control variates | — | — | — | Planned |
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
@@ -39,8 +39,8 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Product | Method | `.h` | `.cpp` | Tests | Status |
 | ------- | ------ | ---- | ------ | ----- | ------ |
-| Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | In progress |
-| Digital Option (European) | MC + BS closed-form | — | — | — | Planned |
+| Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | Done |
+| Digital Option (European) | MC + BS closed-form | [.h](code/cpp/src/product/digitalEuropeanOption.h#L1) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp#L1) | — | In progress |
 | Digital Option (American) | MC + LSM | — | — | — | Planned |
 | Chooser Option | MC + closed-form | — | — | — | Planned |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |

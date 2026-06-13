@@ -164,16 +164,19 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 ```text
 code/cpp/src/
 ├── common/
-│   └── modelParameters.h     ← ModelParameters struct (shared by engine + product)
+│   ├── modelParameters.h     ← ModelParameters struct (shared by engine + product)
+│   ├── optionParameters.h    ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
+│   └── mathFunctions.h       ← mean, sampleVariance, sampleStdDev, normalCdf (header-only inline)
 ├── engine/
 │   ├── engine.h              ← abstract base: virtual double price(const Instrument&) = 0
 │   ├── monteCarloEngine.h    ← SimulationParameters struct + McEngine class (derives Engine)
 │   ├── monteCarloEngine.cpp  ← McEngine::price(), simulateGbmPath(), validateGbmInputs(), createRng() (private)
-│   ├── blackScholesEngine.h/cpp ← BsCloseForm class; does NOT derive Engine (takes VanillaEuropeanOption directly); normalCdf file-static
+│   ├── blackScholesCloseForm.h/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.h
 │   └── pdePricingEngine.h/cpp ← derives Engine; 1D CN / 2D ADI (planned)
 └── product/
     ├── instrument.h           ← abstract base: virtual double payoff(const vector<double>& path) const = 0
-    └── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() single-path switch; parameters() getter returns const OptionParameters&
+    ├── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
+    └── digitalEuropeanOption.h/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
 ```
 
 **Design principles:**
