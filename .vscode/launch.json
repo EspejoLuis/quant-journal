@@ -24,6 +24,14 @@
             "program": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit",
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug mathFunctionsUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

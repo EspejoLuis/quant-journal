@@ -36,6 +36,7 @@
       { "name": "MC Engine", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" },
       { "name": "Vanilla Option", "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit" },
       { "name": "BS Close Form", "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit" },
+      { "name": "Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
   ],
    "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",

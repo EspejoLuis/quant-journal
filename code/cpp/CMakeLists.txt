@@ -6,13 +6,14 @@ project(quantJournal)
 include(CTest)
 
 # Set the C++ standard to use (C++17 here)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 find_package(Catch2 REQUIRED)
 
 # List the .cpp files to compile. Each becomes a .o object file; all .o files
 # are archived together into the static library libquantJournal.a below.
 set(SOURCES
+    src/common/mathFunctions.h
     src/engine/monteCarloEngine.cpp
     src/engine/blackScholesCloseForm.cpp
     src/product/vanillaEuropeanOption.cpp
@@ -34,6 +35,7 @@ target_include_directories(quantJournal PUBLIC src/engine src/product src/common
 add_executable(monteCarloEngineUnit    tests/unit/engine/monteCarloEngine.cpp)
 add_executable(blackScholesCloseFormUnit  tests/unit/engine/blackScholesCloseForm.cpp)
 add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
+add_executable(mathFunctionsUnit tests/unit/common/mathFunctions.cpp)
 
 # Add tests/unit to each executable's include path (PRIVATE = only this target
 # sees it). Needed for any shared test helpers living under tests/unit/.
@@ -42,6 +44,8 @@ add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOptio
 target_include_directories(monteCarloEngineUnit    PRIVATE tests/unit)
 target_include_directories(blackScholesCloseFormUnit  PRIVATE tests/unit)
 target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
+target_include_directories(mathFunctionsUnit PRIVATE tests/unit)
+
 
 # Link each test binary against:
 #   quantJournal         — the static lib (.a) with all production .o files
@@ -50,6 +54,8 @@ target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
 target_link_libraries(monteCarloEngineUnit    quantJournal Catch2::Catch2WithMain)
 target_link_libraries(blackScholesCloseFormUnit  quantJournal Catch2::Catch2WithMain)
 target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
+target_link_libraries(mathFunctionsUnit quantJournal Catch2::Catch2WithMain)
+
 
 # Register each binary with CTest so `ctest` (or the VS Code TestMate runner)
 # knows what command to run. NAME is the label shown in test output; COMMAND is
@@ -57,6 +63,7 @@ target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithM
 add_test(NAME monteCarloEngineUnit    COMMAND monteCarloEngineUnit)
 add_test(NAME blackScholesCloseFormUnit  COMMAND blackScholesCloseFormUnit)
 add_test(NAME vanillaEuropeanOptionUnit COMMAND vanillaEuropeanOptionUnit)
+add_test(NAME mathFunctionsUnit COMMAND mathFunctionsUnit)
 
 
 
@@ -75,18 +82,23 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     # --- 1) Add compiler flags for coverage instrumentation ---
     # -fprofile-instr-generate : instruments code to generate profiling counters (.profraw file)
     # -fcoverage-mapping       : generates mapping info so llvm-cov can map counters to source lines
-    # -O0                      : disable optimisations (ensures accurate mapping)
+    # -O0                      : no optimisation — every line compiles exactly as written so LLVM
+    #                            can map counters to exact source lines. Higher levels (-O1/-O2)
+    #                            eliminate dead branches (e.g. unreachable switch defaults) which
+    #                            improves branch coverage numbers but corrupts line-level mapping.
     # -g                       : include debug symbols for better coverage reports
     target_compile_options(quantJournal           PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(monteCarloEngineUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(vanillaEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(blackScholesCloseFormUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(mathFunctionsUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
 
     # --- 2) Add linker flags for coverage ---
     target_link_options(quantJournal           PRIVATE -fprofile-instr-generate)
     target_link_options(monteCarloEngineUnit PRIVATE -fprofile-instr-generate)
     target_link_options(vanillaEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
     target_link_options(blackScholesCloseFormUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(mathFunctionsUnit PRIVATE -fprofile-instr-generate)
 
     # Paths/patterns to ignore from reports (tests + Catch header)
     set(ignore_regex_tests ".*/tests/")
@@ -105,6 +117,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         monteCarloEngine.profraw 
         vanillaEuropeanOption.profraw 
         blackScholesCloseForm.profraw
+        mathFunctions.profraw
         merged.profdata
         COMMAND ${CMAKE_COMMAND} -E remove_directory coverage_html
 
@@ -115,12 +128,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:vanillaEuropeanOptionUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=blackScholesCloseForm.profraw
                 $<TARGET_FILE:blackScholesCloseFormUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=mathFunctions.profraw
+                $<TARGET_FILE:mathFunctionsUnit>
 
         # Merge profiles
         COMMAND xcrun llvm-profdata merge -sparse 
         monteCarloEngine.profraw 
         vanillaEuropeanOption.profraw 
         blackScholesCloseForm.profraw
+        mathFunctions.profraw
         -o merged.profdata
 
         # Generate a terminal coverage summary report for BOTH binaries
@@ -128,6 +144,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
+                -object=$<TARGET_FILE:mathFunctionsUnit>
                 -instr-profile=merged.profdata
                 -ignore-filename-regex=${ignore_regex_tests}
                 -ignore-filename-regex=${ignore_regex_catch}
@@ -142,6 +159,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
+                -object=$<TARGET_FILE:mathFunctionsUnit>
                 -instr-profile=${CMAKE_BINARY_DIR}/merged.profdata
                 -format=html
                 -output-dir=${CMAKE_BINARY_DIR}/coverage_html
@@ -160,7 +178,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 
         # Ensure BOTH tests are built before running coverage
-        DEPENDS monteCarloEngineUnit vanillaEuropeanOptionUnit blackScholesCloseFormUnit
+        DEPENDS monteCarloEngineUnit 
+                vanillaEuropeanOptionUnit 
+                blackScholesCloseFormUnit
+                mathFunctionsUnit
 
         COMMENT "Running unit + integration with LLVM coverage and generating merged terminal + HTML reports (with branch details)"
     )

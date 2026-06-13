@@ -20,3 +20,7 @@ inline double sampleStandardDeviation(const std::vector<double>& v) {
 
     return std::sqrt(sampleVariance(v));
 };
+
+inline double normalCdf(double x) {
+    return 0.5 * std::erfc(-x / std::sqrt(2.0));
+};
