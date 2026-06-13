@@ -37,6 +37,39 @@ double BsCloseForm::price(
     return sign * unsignedPrice;
 }
 
+double BsCloseForm::price(
+    const DigitalEuropeanOption& digitalEuropeanOption) const {
+
+    const double s0 = modelParams_.underlyingPrice;
+    const double vol = modelParams_.volatility;
+    const double q = modelParams_.dividendRate;
+    const double r = modelParams_.interestRate;
+    const double T = modelParams_.maturityInYears;
+
+    const double K = digitalEuropeanOption.parameters().strike;
+    const OptionDirection direction =
+        digitalEuropeanOption.parameters().direction;
+    const OptionType type = digitalEuropeanOption.parameters().type;
+    const DigitalType digitalType =
+        digitalEuropeanOption.parameters().digitalType;
+
+    const double d1 = (std::log(s0 / K) + (r - q + 1.0 / 2.0 * vol * vol) * T) /
+                      (vol * std::sqrt(T));
+    const double d2 = d1 - (vol * std::sqrt(T));
+
+    const double sign = direction == OptionDirection::Long ? 1.0 : -1.0;
+
+    const double payoutFactor = digitalType == DigitalType::AssetOrNothing
+                                    ? s0 * std::exp(-q * T)
+                                    : K * std::exp(-r * T);
+
+    const double dFactor = digitalType == DigitalType::AssetOrNothing
+                               ? (type == OptionType::Call ? +d1 : -d1)
+                               : (type == OptionType::Call ? +d2 : -d2);
+
+    return sign * payoutFactor * normalCdf(dFactor);
+}
+
 void BsCloseForm::validateInputs() const {
 
     if (modelParams_.underlyingPrice < 0.0)
