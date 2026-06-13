@@ -17,13 +17,15 @@
 
 5. **CLAUDE.md** — update the file structure section or weekly schedule if the session introduced architectural changes or if we drifted from the planned schedule. Estimate if the dates of the plan are still fine or if they need to be extended or shorten.
 
-6. This file [[Modern-Computational-Finance-AAD-and-Parallel-Simulations]] is going to be updated frequently but not every day with new updates. so compare the plan defined in CLAUDE.md with the information in this file. For example if the file says how performace can be improved using threads and parallel computing then the plan in CLAUDE.md needs to change accordingly. Skip the CLAUDE.md update if the information from the book has already been incorporated.
+6. The file at this link [[Modern-Computational-Finance-AAD-and-Parallel-Simulations]] is going to be updated frequently but not every day with new updates. so compare the plan defined in CLAUDE.md with the information in this file. For example if the file says how performace can be improved using threads and parallel computing then the plan in CLAUDE.md needs to change accordingly. Skip the CLAUDE.md update if the information from the book has already been incorporated.
 
-7. **README.md** — check if any new files, notes, or products were added that should be reflected in the tables (Models, Numerical Methods, Products, Notes). Also check if all links the notes in `notes` folder are present in the README.md file.
+7. **README.md** — check if any new files, notes, or products were added that should be reflected in the tables (Models, Numerical Methods, Products, Notes). Also check if all links in `notes` folder are present in the README.md file.
+
+   - Status audit: for every row in the tables, set status to Done only when ALL of these are true: (1) .h, .cpp, and tests columns all have links, AND (2) all checklist items for that feature in project_progress.md are ticked. If either condition is unmet, keep it as In progress if work on that has started. If no work has started then Planned is fine.
 
 8. **Anki Cards** - check sections `key points` and `coding` defined in point 1 and compare them with my existing Anki cards. If there are existing Anki cards that are linked to what has been reviewed during the session, add the tag `reviewFromQuantJournal` to those cards. If there no existing cards linked to what has been reviewed during the session, create Anki Cards using existing tags. Add new tags only if no tags representing what has been reviewed can be found. Note about tags: if there is a tag you want to use like A::B::C, don't put A::B and A on top of A::B::C,because they will put automatically if you use A::B::C. If the card you want to creat contains formula be sure to use the latex format used in all the other cards.
 
-9. Always check that all the topic requiring coding defined in `CLAUDE.md` should appear in the corresponding cell in the tables in `README.md`.
+9. Verify that every feature requiring coding in CLAUDE.md has a corresponding row in the correct table in README.md (Models, Numerical Methods, or Products).
 
 Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6/7/9 unless explicitly stated in the step. For point 8 you have to tell me which cards are you planning to add with a summary, I will confirm or not. Complete all steps and report a summary at the end for each point.
 
