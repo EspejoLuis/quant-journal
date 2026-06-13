@@ -21,7 +21,7 @@
 
 7. **README.md** — check if any new files, notes, or products were added that should be reflected in the tables (Models, Numerical Methods, Products, Notes). Also check if all links the notes in `notes` folder are present in the README.md file.
 
-8. **Anki Cards** - check sections `key points` and `coding` defined in point 1 and compare them with my existing Anki cards. If there are existing Anki cards that are linked to what has been reviewed during the session, add the tag `reviewFromQuantJournal` to those cards. If there no existing cards linked to what has been reviewed during the session, create Anki Cards using existing tags. Add new tags only if no tags representing what has been reviewed can be found. Note about tags: if there is a tag you want to use like A::B::C, don't put A::B and A on top of A::B::C,because they will put automatically if you use A::B::C.
+8. **Anki Cards** - check sections `key points` and `coding` defined in point 1 and compare them with my existing Anki cards. If there are existing Anki cards that are linked to what has been reviewed during the session, add the tag `reviewFromQuantJournal` to those cards. If there no existing cards linked to what has been reviewed during the session, create Anki Cards using existing tags. Add new tags only if no tags representing what has been reviewed can be found. Note about tags: if there is a tag you want to use like A::B::C, don't put A::B and A on top of A::B::C,because they will put automatically if you use A::B::C. If the card you want to creat contains formula be sure to use the latex format used in all the other cards.
 
 9. Always check that all the topic requiring coding defined in `CLAUDE.md` should appear in the corresponding cell in the tables in `README.md`.
 
