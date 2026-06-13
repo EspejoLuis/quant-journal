@@ -40,7 +40,8 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Product | Method | `.h` | `.cpp` | Tests | Status |
 | ------- | ------ | ---- | ------ | ----- | ------ |
 | Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | In progress |
-| Digital Option | MC + 1D CN | — | — | — | Planned |
+| Digital Option (European) | MC + BS closed-form | — | — | — | Planned |
+| Digital Option (American) | MC + LSM | — | — | — | Planned |
 | Chooser Option | MC + closed-form | — | — | — | Planned |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |
 | Barrier Option | MC + 1D CN + Rubinstein-Reiner | — | — | — | Planned |

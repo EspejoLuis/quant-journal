@@ -217,7 +217,8 @@ The plan is incremental: each block extends the engine by one capability, then i
 | # | Product | Block | Needs | MC pricing | Status |
 | - | ------- | ----- | ----- | ---------- | ------ |
 | — | Engine seed (GBM + 1D CN) | A | — | — | [ ] |
-| 1 | Digital Option | A | GBM | European only | [ ] |
+| 1 | Digital Option (European) | A | GBM | European only | [ ] |
+| 1b | Digital Option (American) | A+LSM | GBM + LSM | LSM primary | [ ] |
 | 2 | Chooser Option | A | GBM | European only | [ ] |
 | 3 | Asian Option | A | GBM + path avg | European + LSM (American Asian) | [ ] |
 | 4 | Barrier Option | A | GBM + barrier check | European + LSM (American barrier) | [ ] |
