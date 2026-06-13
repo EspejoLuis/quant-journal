@@ -11,27 +11,12 @@ VanillaEuropeanOption::VanillaEuropeanOption(const OptionParameters& optParams)
 
 double VanillaEuropeanOption::payoff(const std::vector<double>& path) const {
 
-    double payoff = 0.0;
+    const double sign =
+        optParams_.direction == OptionDirection::Long ? 1.0 : -1.0;
 
-    switch (optParams_.type) {
-    case OptionType::Call:
-        payoff += std::max(path.back() - optParams_.strike, 0.0);
-        break;
-    case OptionType::Put:
-        payoff += std::max(optParams_.strike - path.back(), 0.0);
-        break;
-    };
-
-    double sign = 0.0;
-
-    switch (optParams_.direction) {
-    case OptionDirection::Long:
-        sign = +1.0;
-        break;
-    case OptionDirection::Short:
-        sign = -1.0;
-        break;
-    }
+    const double payoff = optParams_.type == OptionType::Call
+                              ? std::max(path.back() - optParams_.strike, 0.0)
+                              : std::max(optParams_.strike - path.back(), 0.0);
 
     return sign * payoff;
 }
