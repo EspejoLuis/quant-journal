@@ -9,6 +9,8 @@
 
    Add only the sections relevant to today's session. If today's work involved a type of activity that doesn't match any existing snippet, ask the user if they want a new snippet created for it.
 
+   Use `$...$` for all mathematical expressions in the log — never plain text or Unicode symbols (σ, μ, etc.).
+
 2. **Anki screenshot** — find the most recent screenshot in the `log` folder. The screenshot will be newer than yesterday's log. If no screenshot is found, skip this step. If found, rename it to `Anki_<D><Mon>_<YYYY>.<ext>`, move it to `log/<YYYY>/<MM-Mon>/images/`. Update the image link in today's log. Write the image caption/alt text in the same style as previous entries. Also check section from previous day and similar comments unless told otherwise. For example, if previous day anki section has "reviewed this link focusing on" then use same comment updating the image only.
 
 3. **Coding section** — summarise what was actually done in the session: files created or modified, design decisions made, concepts learned. Link to relevant files using relative markdown links (depth from log file: `../../../` to reach repo root). Follow the bullet style of previous log entries (check last 5 days).
