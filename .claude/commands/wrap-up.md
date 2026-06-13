@@ -23,6 +23,8 @@
 
 8. **Anki Cards** - check sections `key points` and `coding` defined in point 1 and compare them with my existing Anki cards. If there are existing Anki cards that are linked to what has been reviewed during the session, add the tag `reviewFromQuantJournal` to those cards. If there no existing cards linked to what has been reviewed during the session, create Anki Cards using existing tags. Add new tags only if no tags representing what has been reviewed can be found. Note about tags: if there is a tag you want to use like A::B::C, don't put A::B and A on top of A::B::C,because they will put automatically if you use A::B::C.
 
-Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6/7 unless explicitly stated in the step. For point 8 you have to tell me which cards are you planning to add with a summary, I will confirm or not. Complete all steps and report a summary at the end for each point.
+9. Always check that all the topic requiring coding defined in `CLAUDE.md` should appear in the corresponding cell in the tables in `README.md`.
+
+Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6/7/9 unless explicitly stated in the step. For point 8 you have to tell me which cards are you planning to add with a summary, I will confirm or not. Complete all steps and report a summary at the end for each point.
 
 [Modern-Computational-Finance-AAD-and-Parallel-Simulations]: ../../books/Modern-Computational-Finance-AAD-and-Parallel-Simulations.md "AAD and // Simulation"
