@@ -1,8 +1,6 @@
 #pragma once
 #include "instrument.h"
-
-enum class OptionType { Call, Put };
-enum class OptionDirection { Long, Short };
+#include "optionParameters.h"
 
 struct OptionParameters {
     double strike;
