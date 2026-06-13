@@ -1,9 +1,6 @@
 #include "blackScholesCloseForm.h"
+#include "mathFunctions.h"
 #include <cmath>
-
-static double normalCdf(double x) {
-    return 0.5 * std::erfc(-x / std::sqrt(2.0));
-};
 
 BsCloseForm::BsCloseForm(const ModelParameters& modelParams)
     : modelParams_(modelParams) {
@@ -42,16 +39,14 @@ double BsCloseForm::price(
 
     double unsignedPrice = 0.0;
     switch (type) {
-    case OptionType::Call: {
+    case OptionType::Call:
         unsignedPrice = s0 * std::exp(-q * T) * normalCdf(d1) -
                         K * std::exp(-r * T) * normalCdf(d2);
         break;
-    }
-    case OptionType::Put: {
+    case OptionType::Put:
         unsignedPrice = -s0 * std::exp(-q * T) * normalCdf(-d1) +
                         K * std::exp(-r * T) * normalCdf(-d2);
         break;
-    }
     }
 
     return sign * unsignedPrice;
