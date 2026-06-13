@@ -16,7 +16,9 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | **Heston** | Euler-Milstein with variance reflection | — | — | — | Planned |
 | | Characteristic function pricer | — | — | — | Planned |
 | | 2D ADI solver | — | — | — | Planned |
-| **SLV** | Leverage function calibration via particle method | — | — | — | Planned |
+| **Correlated GBM** | 2-asset path (`simulateCorrelatedGbmPath`) via Cholesky | — | — | — | Planned |
+| **SLV** | Path simulation (`simulateSlvPath`) via pre-computed L(S,t) grid | — | — | — | Planned |
+| | Leverage function calibration via particle method | — | — | — | Planned |
 
 ### Numerical Methods
 
@@ -24,10 +26,14 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | ------ | ------- | ---- | ------ | ----- | ------ |
 | **Monte Carlo** | GBM engine (`McEngine`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L22) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L12) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L8) | In progress |
 | | Antithetic variates | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | In progress |
+| | Control variates | — | — | — | Planned |
+| | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | — | — | Planned |
 | **Finite Differences** | 1D Crank-Nicolson (BS PDE) | — | — | — | Planned |
-| | 2D Craig-Sneyd ADI (Heston/SLV) | — | — | — | Planned |
+| | 2D Crank-Nicolson (Lookback, S×M grid) | — | — | — | Planned |
+| | 2D Craig-Sneyd ADI (Heston/SLV, S×v grid) | — | — | — | Planned |
+| **AAD** | Greeks via reverse-mode automatic differentiation | — | — | — | Planned |
 
 ### Products
 
