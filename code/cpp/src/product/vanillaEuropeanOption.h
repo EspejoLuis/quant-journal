@@ -21,4 +21,6 @@ class VanillaEuropeanOption : public Instrument {
 
   private:
     const OptionParameters optParams_;
+
+    void validateInputs() const;
 };

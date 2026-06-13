@@ -89,7 +89,7 @@ std::vector<std::vector<double>> McEngine::simulateGbmPath() {
     }
 };
 
-void McEngine::validateInputs() {
+void McEngine::validateInputs() const {
 
     if (modelParams_.underlyingPrice < 0.0)
         throw std::invalid_argument("underlying price cannot be negative");

@@ -52,7 +52,7 @@ double BsCloseForm::price(
     return sign * unsignedPrice;
 }
 
-void BsCloseForm::validateInputs() {
+void BsCloseForm::validateInputs() const {
 
     if (modelParams_.underlyingPrice < 0.0)
         throw std::invalid_argument("underlying price cannot be negative");

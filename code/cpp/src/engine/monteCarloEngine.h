@@ -34,7 +34,7 @@ class McEngine : public Engine {
     // Returns matrix of nPaths x nSteps
     std::vector<std::vector<double>> simulateGbmPath();
 
-    void validateInputs();
+    void validateInputs() const;
 
     std::mt19937 createRng(unsigned int seed);
 

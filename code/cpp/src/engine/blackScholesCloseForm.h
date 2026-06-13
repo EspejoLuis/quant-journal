@@ -14,5 +14,5 @@ class BsCloseForm {
   private:
     const ModelParameters modelParams_;
 
-    void validateInputs();
+    void validateInputs() const;
 };
