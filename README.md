@@ -6,59 +6,47 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 ### Models
 
-<div align="center">
-
-| Model | Feature | Tests | Status |
-| ----- | ------- | ----- | ------ |
-| **GBM (Black-Scholes)** | [Path simulation (`simulateGbmPath`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | Antithetic variates (`VarianceReduction::Antithetic`) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | [Closed-form (`BsCloseForm`)](code/cpp/src/engine/blackScholesCloseForm.cpp) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp) | In progress |
-| **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | Planned |
-| | Forward PDE calibration | — | Planned |
-| **Heston** | Euler-Milstein with variance reflection | — | Planned |
-| | Characteristic function pricer | — | Planned |
-| | 2D ADI solver | — | Planned |
-| **SLV** | Leverage function calibration via particle method | — | Planned |
-
-</div>
+| Model | Feature | `.h` | `.cpp` | Tests | Status |
+| ----- | ------- | ---- | ------ | ----- | ------ |
+| **GBM** | Path simulation (`simulateGbmPath`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L35) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L29) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | In progress |
+| | Antithetic variates (`VarianceReduction::Antithetic`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | In progress |
+| | Closed-form (`BsCloseForm`) | [.h](code/cpp/src/engine/blackScholesCloseForm.h#L7) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp#L8) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp#L5) | In progress |
+| **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | — | — | Planned |
+| | Forward PDE calibration | — | — | — | Planned |
+| **Heston** | Euler-Milstein with variance reflection | — | — | — | Planned |
+| | Characteristic function pricer | — | — | — | Planned |
+| | 2D ADI solver | — | — | — | Planned |
+| **SLV** | Leverage function calibration via particle method | — | — | — | Planned |
 
 ### Numerical Methods
 
-<div align="center">
-
-| Method | Feature | Tests | Status |
-| ------ | ------- | ----- | ------ |
-| **Monte Carlo** | [GBM engine (`McEngine`)](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | Antithetic variates | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | In progress |
-| | Quasi-MC with Sobol sequences | — | Planned |
-| **Longstaff-Schwartz (LSM)** | Continuation value regression | — | Planned |
-| **Finite Differences** | 1D Crank-Nicolson (BS PDE) | — | Planned |
-| | 2D Craig-Sneyd ADI (Heston/SLV) | — | Planned |
-
-</div>
+| Method | Feature | `.h` | `.cpp` | Tests | Status |
+| ------ | ------- | ---- | ------ | ----- | ------ |
+| **Monte Carlo** | GBM engine (`McEngine`) | [.h](code/cpp/src/engine/monteCarloEngine.h#L22) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L12) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L8) | In progress |
+| | Antithetic variates | [.h](code/cpp/src/engine/monteCarloEngine.h#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | In progress |
+| | Quasi-MC with Sobol sequences | — | — | — | Planned |
+| **Longstaff-Schwartz (LSM)** | Continuation value regression | — | — | — | Planned |
+| **Finite Differences** | 1D Crank-Nicolson (BS PDE) | — | — | — | Planned |
+| | 2D Craig-Sneyd ADI (Heston/SLV) | — | — | — | Planned |
 
 ### Products
 
-<div align="center">
-
-| Product | Method | Tests | Status |
-| ------- | ------ | ----- | ------ |
-| [Vanilla European Option](code/cpp/src/product/vanillaEuropeanOption.cpp) | MC + BS closed-form | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp) | In progress |
-| Digital Option | MC + 1D CN | — | Planned |
-| Chooser Option | MC + closed-form | — | Planned |
-| Asian Option | MC + control variates + LSM | — | Planned |
-| Barrier Option | MC + 1D CN + Rubinstein-Reiner | — | Planned |
-| Lookback Option | MC + 2D CN | — | Planned |
-| Variance Swap | MC + log-contract replication | — | Planned |
-| Volatility Swap | MC + Brockhaus-Long | — | Planned |
-| Range Accrual | Local Vol MC + 1D CN | — | Planned |
-| Cliquet Option | Local Vol MC | — | Planned |
-| Rainbow Option | Correlated GBM + Margrabe | — | Planned |
-| Worst-of Option | Correlated GBM + LSM | — | Planned |
-| Accumulator | Heston MC + LSM | — | Planned |
-| Autocallable | SLV + LSM + AAD Greeks | — | Planned |
-
-</div>
+| Product | Method | `.h` | `.cpp` | Tests | Status |
+| ------- | ------ | ---- | ------ | ----- | ------ |
+| Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | In progress |
+| Digital Option | MC + 1D CN | — | — | — | Planned |
+| Chooser Option | MC + closed-form | — | — | — | Planned |
+| Asian Option | MC + control variates + LSM | — | — | — | Planned |
+| Barrier Option | MC + 1D CN + Rubinstein-Reiner | — | — | — | Planned |
+| Lookback Option | MC + 2D CN | — | — | — | Planned |
+| Variance Swap | MC + log-contract replication | — | — | — | Planned |
+| Volatility Swap | MC + Brockhaus-Long | — | — | — | Planned |
+| Range Accrual | Local Vol MC + 1D CN | — | — | — | Planned |
+| Cliquet Option | Local Vol MC | — | — | — | Planned |
+| Rainbow Option | Correlated GBM + Margrabe | — | — | — | Planned |
+| Worst-of Option | Correlated GBM + LSM | — | — | — | Planned |
+| Accumulator | Heston MC + LSM | — | — | — | Planned |
+| Autocallable | SLV + LSM + AAD Greeks | — | — | — | Planned |
 
 ### Books
 
