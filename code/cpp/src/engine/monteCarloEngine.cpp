@@ -108,6 +108,12 @@ void McEngine::validateInputs() {
     if (simParams_.nSteps <= 0)
         throw std::invalid_argument(
             "number of steps cannot be negative or zero");
+
+    if (simParams_.varianceReduction != VarianceReduction::Antithetic &&
+        simParams_.varianceReduction != VarianceReduction::ControlVariates &&
+        simParams_.varianceReduction != VarianceReduction::ImportantSampling &&
+        simParams_.varianceReduction)
+        throw std::invalid_argument("invalid VarianceReduction");
 }
 
 std::mt19937 McEngine::createRng() {

@@ -26,6 +26,14 @@ TEST_CASE("validateInputs returns error. Incorrect SimulationParameters ",
     SimulationParameters simParams{.nPaths = nP, .nSteps = nS};
 
     REQUIRE_THROWS_AS(McEngine(modelParams, simParams), std::invalid_argument);
+
+    SimulationParameters simParamsVarRed{
+        .nPaths = 1,
+        .nSteps = 1,
+        .varianceReduction = static_cast<VarianceReduction>(10)};
+
+    REQUIRE_THROWS_AS(McEngine(modelParams, simParamsVarRed),
+                      std::invalid_argument);
 }
 
 TEST_CASE("validateInputs returns error. Incorrect ModelParameters ",
