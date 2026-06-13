@@ -22,32 +22,17 @@ double BsCloseForm::price(
         vanillaEuropeanOption.parameters().direction;
     const OptionType type = vanillaEuropeanOption.parameters().type;
 
-    double d1 = (std::log(s0 / K) + (r - q + 1.0 / 2.0 * vol * vol) * T) /
-                (vol * std::sqrt(T));
-    double d2 = d1 - (vol * std::sqrt(T));
+    const double d1 = (std::log(s0 / K) + (r - q + 1.0 / 2.0 * vol * vol) * T) /
+                      (vol * std::sqrt(T));
+    const double d2 = d1 - (vol * std::sqrt(T));
 
-    double sign = 0.0;
+    const double sign = direction == OptionDirection::Long ? 1.0 : -1.0;
 
-    switch (direction) {
-    case OptionDirection::Long:
-        sign = +1.0;
-        break;
-    case OptionDirection::Short:
-        sign = -1.0;
-        break;
-    }
-
-    double unsignedPrice = 0.0;
-    switch (type) {
-    case OptionType::Call:
-        unsignedPrice = s0 * std::exp(-q * T) * normalCdf(d1) -
-                        K * std::exp(-r * T) * normalCdf(d2);
-        break;
-    case OptionType::Put:
-        unsignedPrice = -s0 * std::exp(-q * T) * normalCdf(-d1) +
-                        K * std::exp(-r * T) * normalCdf(-d2);
-        break;
-    }
+    const double unsignedPrice =
+        type == OptionType::Call ? s0 * std::exp(-q * T) * normalCdf(d1) -
+                                       K * std::exp(-r * T) * normalCdf(d2)
+                                 : -s0 * std::exp(-q * T) * normalCdf(-d1) +
+                                       K * std::exp(-r * T) * normalCdf(-d2);
 
     return sign * unsignedPrice;
 }
