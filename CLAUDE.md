@@ -125,8 +125,9 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 #### Concurrency (CP) — active from Heston week onward
 
 - **CP.1** — Design path generators to be thread-safe by being stateless: inputs in, path out, nothing shared.
-- **CP.8** — Use `std::atomic<double>` for simple shared accumulators. Use `std::mutex` with `std::lock_guard` for compound updates.
+- **CP.8** — Use `std::atomic<double>` for simple shared accumulators. Use `std::mutex` with `std::lock_guard` for compound updates. Primitive hierarchy (cheapest → heaviest): atomic (single variable, single op) → spinlock (short critical section, low contention) → mutex+CV (longer section or sleep-until-condition).
 - **CP.20** — Never share an RNG across threads. Each `std::thread` gets its own seeded `std::mt19937`.
+- **Lambda captures in parallel code** — never capture local variables by reference (`[&]`) in a lambda passed to a thread if the variable may go out of scope before the thread finishes. Capture by value (`[=]`) for safety; capture by reference only for objects with guaranteed longer lifetime (e.g. the engine itself).
 
 #### Error handling
 
@@ -172,7 +173,7 @@ code/cpp/src/
 │   ├── monteCarloEngine.h    ← SimulationParameters struct + McEngine class (derives Engine)
 │   ├── monteCarloEngine.cpp  ← McEngine::price(), simulateGbmPath(), validateGbmInputs(), createRng() (private)
 │   ├── blackScholesCloseForm.h/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.h
-│   └── pdePricingEngine.h/cpp ← derives Engine; 1D CN / 2D ADI (planned)
+│   └── pdePricingEngine.h/cpp ← derives Engine; 1D Forward Euler / Backward Euler / CN / 2D ADI (planned)
 └── product/
     ├── instrument.h           ← abstract base: virtual double payoff(const vector<double>& path) const = 0
     ├── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
@@ -206,7 +207,9 @@ code/cpp/src/
 
 **PDE solvers** (in `pdePricingEngine`):
 
-- 1D Crank-Nicolson with Thomas algorithm (tridiagonal solve)
+- 1D Forward Euler — explicit, no system to solve, conditionally stable (CFL condition Δt ≤ Δx²/2); implement first to see stability failure
+- 1D Backward Euler — implicit, unconditionally stable, first-order in time; same Thomas algorithm tridiagonal solve as CN
+- 1D Crank-Nicolson — implicit, second-order in time and space, standard choice; Thomas algorithm tridiagonal solve
 - 2D Craig-Sneyd ADI for the Heston/SLV PDE in (S,v)
 
 ---
@@ -257,7 +260,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 Build the minimum viable engine — one path generator, one PDE solver, one product.
 
 - `mc_engine.h`: `simulateGbmPath(S0, r, sigma, T, N)` returning daily prices. Price a vanilla European call by averaging `max(S_T - K, 0)` over many paths.
-- `pde_engine.h`: 1D Crank-Nicolson solver. Solve the BS PDE backward in time from the call payoff at maturity.
+- `pde_engine.h`: 1D PDE solver with three schemes — Forward Euler (explicit, observe stability failure), Backward Euler (implicit, first-order), Crank-Nicolson (implicit, second-order). Solve the BS PDE backward in time from the call payoff at maturity.
 - Verify both against BS closed-form. If both agree to < 0.5%, the engines are correct.
 
 **RNG this week:** `std::mt19937` seeded with `std::random_device`. Understand why the seed matters for reproducibility.

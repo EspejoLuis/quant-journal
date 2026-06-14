@@ -30,7 +30,9 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | — | — | Planned |
-| **Finite Differences** | 1D Crank-Nicolson (BS PDE) | — | — | — | Planned |
+| **Finite Differences** | 1D Forward Euler (BS PDE) | — | — | — | Planned |
+| | 1D Backward Euler (BS PDE) | — | — | — | Planned |
+| | 1D Crank-Nicolson (BS PDE) | — | — | — | Planned |
 | | 2D Crank-Nicolson (Lookback, S×M grid) | — | — | — | Planned |
 | | 2D Craig-Sneyd ADI (Heston/SLV, S×v grid) | — | — | — | Planned |
 | **AAD** | Greeks via reverse-mode automatic differentiation | — | — | — | Planned |
@@ -40,7 +42,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Product | Method | `.h` | `.cpp` | Tests | Status |
 | ------- | ------ | ---- | ------ | ----- | ------ |
 | Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | Done |
-| Digital Option (European) | MC + BS closed-form | [.h](code/cpp/src/product/digitalEuropeanOption.h#L1) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp#L1) | — | In progress |
+| Digital Option (European) | MC + BS closed-form + 1D PDE | [.h](code/cpp/src/product/digitalEuropeanOption.h#L1) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp#L1) | [tests](code/cpp/tests/unit/product/digitalEuropeanOption.cpp#L7) | In progress |
 | Digital Option (American) | MC + LSM | — | — | — | Planned |
 | Chooser Option | MC + closed-form | — | — | — | Planned |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |
@@ -66,3 +68,5 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 - [Stochastic Exponential](notes/random-notes/stochastic-exponential.md)
 - [Normal CDF via erf](notes/random-notes/normal-cdf-erf.md)
 - [Black-Scholes Formula](notes/random-notes/black-scholes-formula.md)
+- [Digital Option (European)](notes/products/digital-option.md)
+- [Chooser Option](notes/products/chooser-option.md)
