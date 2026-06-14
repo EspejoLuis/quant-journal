@@ -15,7 +15,7 @@ TEST_CASE("VanillaEuropeanOption returns correct. Long Put-Call parity",
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
-    double strike = 10;
+    double strike = 86;
     OptionParameters optionParamsCall{
         .strike = strike,
         .type = OptionType::Call,
@@ -57,7 +57,7 @@ TEST_CASE("VanillaEuropeanOption returns correct. Short Put-Call parity.",
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
-    double strike = 10;
+    double strike = 85;
     OptionParameters optionParamsCall{
         .strike = strike,
         .type = OptionType::Call,

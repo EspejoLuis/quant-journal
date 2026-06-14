@@ -17,6 +17,7 @@ set(SOURCES
     src/engine/monteCarloEngine.cpp
     src/engine/blackScholesCloseForm.cpp
     src/product/vanillaEuropeanOption.cpp
+    src/product/digitalEuropeanOption.cpp
 )
 
 # Compile SOURCES into a static library: libquantJournal.a
@@ -35,6 +36,7 @@ target_include_directories(quantJournal PUBLIC src/engine src/product src/common
 add_executable(monteCarloEngineUnit    tests/unit/engine/monteCarloEngine.cpp)
 add_executable(blackScholesCloseFormUnit  tests/unit/engine/blackScholesCloseForm.cpp)
 add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
+add_executable(digitalEuropeanOptionUnit tests/unit/product/digitalEuropeanOption.cpp)
 add_executable(mathFunctionsUnit tests/unit/common/mathFunctions.cpp)
 
 # Add tests/unit to each executable's include path (PRIVATE = only this target
@@ -44,6 +46,7 @@ add_executable(mathFunctionsUnit tests/unit/common/mathFunctions.cpp)
 target_include_directories(monteCarloEngineUnit    PRIVATE tests/unit)
 target_include_directories(blackScholesCloseFormUnit  PRIVATE tests/unit)
 target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
+target_include_directories(digitalEuropeanOptionUnit PRIVATE tests/unit)
 target_include_directories(mathFunctionsUnit PRIVATE tests/unit)
 
 
@@ -54,6 +57,7 @@ target_include_directories(mathFunctionsUnit PRIVATE tests/unit)
 target_link_libraries(monteCarloEngineUnit    quantJournal Catch2::Catch2WithMain)
 target_link_libraries(blackScholesCloseFormUnit  quantJournal Catch2::Catch2WithMain)
 target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
+target_link_libraries(digitalEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
 target_link_libraries(mathFunctionsUnit quantJournal Catch2::Catch2WithMain)
 
 
@@ -63,6 +67,7 @@ target_link_libraries(mathFunctionsUnit quantJournal Catch2::Catch2WithMain)
 add_test(NAME monteCarloEngineUnit    COMMAND monteCarloEngineUnit)
 add_test(NAME blackScholesCloseFormUnit  COMMAND blackScholesCloseFormUnit)
 add_test(NAME vanillaEuropeanOptionUnit COMMAND vanillaEuropeanOptionUnit)
+add_test(NAME digitalEuropeanOptionUnit COMMAND digitalEuropeanOptionUnit)
 add_test(NAME mathFunctionsUnit COMMAND mathFunctionsUnit)
 
 
@@ -90,6 +95,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_compile_options(quantJournal           PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(monteCarloEngineUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(vanillaEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(digitalEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(blackScholesCloseFormUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(mathFunctionsUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
 
@@ -97,6 +103,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_link_options(quantJournal           PRIVATE -fprofile-instr-generate)
     target_link_options(monteCarloEngineUnit PRIVATE -fprofile-instr-generate)
     target_link_options(vanillaEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(digitalEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
     target_link_options(blackScholesCloseFormUnit PRIVATE -fprofile-instr-generate)
     target_link_options(mathFunctionsUnit PRIVATE -fprofile-instr-generate)
 
@@ -115,7 +122,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         # Start clean: remove previous coverage artifacts so paths map cleanly
         COMMAND ${CMAKE_COMMAND} -E remove -f 
         monteCarloEngine.profraw 
-        vanillaEuropeanOption.profraw 
+        vanillaEuropeanOption.profraw
+        digitalEuropeanOption.profraw 
         blackScholesCloseForm.profraw
         mathFunctions.profraw
         merged.profdata
@@ -126,6 +134,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:monteCarloEngineUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=vanillaEuropeanOption.profraw
                 $<TARGET_FILE:vanillaEuropeanOptionUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=digitalEuropeanOption.profraw
+                $<TARGET_FILE:digitalEuropeanOptionUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=blackScholesCloseForm.profraw
                 $<TARGET_FILE:blackScholesCloseFormUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=mathFunctions.profraw
@@ -134,7 +144,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         # Merge profiles
         COMMAND xcrun llvm-profdata merge -sparse 
         monteCarloEngine.profraw 
-        vanillaEuropeanOption.profraw 
+        vanillaEuropeanOption.profraw
+        digitalEuropeanOption.profraw
         blackScholesCloseForm.profraw
         mathFunctions.profraw
         -o merged.profdata
@@ -143,6 +154,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         COMMAND xcrun llvm-cov report
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
+                -object=$<TARGET_FILE:digitalEuropeanOptionUnit>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
                 -instr-profile=merged.profdata
@@ -158,6 +170,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} xcrun llvm-cov show
                 $<TARGET_FILE:monteCarloEngineUnit>
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
+                -object=$<TARGET_FILE:digitalEuropeanOptionUnit>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
                 -instr-profile=${CMAKE_BINARY_DIR}/merged.profdata
@@ -180,7 +193,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         # Ensure BOTH tests are built before running coverage
         DEPENDS monteCarloEngineUnit 
                 vanillaEuropeanOptionUnit 
-                blackScholesCloseFormUnit
+                digitalEuropeanOptionUnit 
+                blackScholesCloseFormUnit 
                 mathFunctionsUnit
 
         COMMENT "Running unit + integration with LLVM coverage and generating merged terminal + HTML reports (with branch details)"

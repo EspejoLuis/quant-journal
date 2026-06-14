@@ -15,7 +15,7 @@ double DigitalEuropeanOption::payoff(const std::vector<double>& path) const {
     const double underlyingPrice = path.back();
 
     const bool indicator = optParams_.type == OptionType::Call
-                               ? underlyingPrice > optParams_.strike
+                               ? underlyingPrice >= optParams_.strike
                                : underlyingPrice < optParams_.strike;
 
     const double payoutAmount =

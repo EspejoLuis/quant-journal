@@ -18,6 +18,14 @@
             "cwd": "${workspaceFolder}"
         },
         {
+            "name": "Debug digitalEuropeanOptionUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/digitalEuropeanOptionUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
             "name": "Debug blackScholesCloseFormUnit",
             "type": "lldb",
             "request": "launch",

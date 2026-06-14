@@ -33,10 +33,11 @@
   "cmake.buildBeforeRun": true,
   "cmake.ctest.testExplorerIntegrationEnabled": false,
   "testMate.cpp.test.advancedExecutables": [
-      { "name": "MC Engine", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" },
-      { "name": "Vanilla Option", "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit" },
-      { "name": "BS Close Form", "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit" },
-      { "name": "Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
+      { "name": "Engine: Monte Carlo", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" },
+      { "name": "Product: Vanilla European Option", "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit" },
+      { "name": "Product: Digital European Option", "pattern": "${workspaceFolder}/code/cpp/build/digitalEuropeanOptionUnit" },
+      { "name": "Engine: Close Form", "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit" },
+      { "name": "Common: Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
   ],
    "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
