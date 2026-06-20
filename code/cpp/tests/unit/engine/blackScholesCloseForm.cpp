@@ -18,7 +18,7 @@ TEST_CASE("validateInputs returns errors. Incorrect ModelParameters",
                                 .interestRate = r,
                                 .dividendRate = q,
                                 .volatility = sigma,
-                                .maturityInYears = T};
+                                .timeHorizonInYears = T};
 
     REQUIRE_THROWS_AS(BsCloseForm(modelParams), std::invalid_argument);
 }
@@ -30,7 +30,7 @@ TEST_CASE("price returns correct. Vanilla European Option - Call (Long/Short)",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     const double strike = 90;
     OptionParameters optionParamsCallLong{
@@ -49,19 +49,20 @@ TEST_CASE("price returns correct. Vanilla European Option - Call (Long/Short)",
         (std::log(modelParams.underlyingPrice / strike) +
          (modelParams.interestRate - modelParams.dividendRate +
           1.0 / 2.0 * modelParams.volatility * modelParams.volatility) *
-             modelParams.maturityInYears) /
-        (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+             modelParams.timeHorizonInYears) /
+        (modelParams.volatility * std::sqrt(modelParams.timeHorizonInYears));
 
-    double d2 =
-        d1 - (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+    double d2 = d1 - (modelParams.volatility *
+                      std::sqrt(modelParams.timeHorizonInYears));
 
-    double unsignedPrice =
-        modelParams.underlyingPrice *
-            std::exp(-modelParams.dividendRate * modelParams.maturityInYears) *
-            normalCdf(d1) -
-        strike *
-            std::exp(-modelParams.interestRate * modelParams.maturityInYears) *
-            normalCdf(d2);
+    double unsignedPrice = modelParams.underlyingPrice *
+                               std::exp(-modelParams.dividendRate *
+                                        modelParams.timeHorizonInYears) *
+                               normalCdf(d1) -
+                           strike *
+                               std::exp(-modelParams.interestRate *
+                                        modelParams.timeHorizonInYears) *
+                               normalCdf(d2);
 
     double bsPriceLong = BsCloseForm{modelParams}.price(
         VanillaEuropeanOption{optionParamsCallLong});
@@ -82,7 +83,7 @@ TEST_CASE("price returns correct. Vanilla European Option - Put (Long/Short)",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     const double strike = 90;
     OptionParameters optionParamsCallLong{
@@ -101,19 +102,20 @@ TEST_CASE("price returns correct. Vanilla European Option - Put (Long/Short)",
         (std::log(modelParams.underlyingPrice / strike) +
          (modelParams.interestRate - modelParams.dividendRate +
           1.0 / 2.0 * modelParams.volatility * modelParams.volatility) *
-             modelParams.maturityInYears) /
-        (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+             modelParams.timeHorizonInYears) /
+        (modelParams.volatility * std::sqrt(modelParams.timeHorizonInYears));
 
-    double d2 =
-        d1 - (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+    double d2 = d1 - (modelParams.volatility *
+                      std::sqrt(modelParams.timeHorizonInYears));
 
-    double unsignedPrice =
-        -modelParams.underlyingPrice *
-            std::exp(-modelParams.dividendRate * modelParams.maturityInYears) *
-            normalCdf(-d1) +
-        strike *
-            std::exp(-modelParams.interestRate * modelParams.maturityInYears) *
-            normalCdf(-d2);
+    double unsignedPrice = -modelParams.underlyingPrice *
+                               std::exp(-modelParams.dividendRate *
+                                        modelParams.timeHorizonInYears) *
+                               normalCdf(-d1) +
+                           strike *
+                               std::exp(-modelParams.interestRate *
+                                        modelParams.timeHorizonInYears) *
+                               normalCdf(-d2);
 
     double bsPriceLong = BsCloseForm{modelParams}.price(
         VanillaEuropeanOption{optionParamsCallLong});
@@ -134,7 +136,7 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     const double strike = 90;
     DigitalOptionParameters optionParamsCallLongAoN{
@@ -169,20 +171,20 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
         (std::log(modelParams.underlyingPrice / strike) +
          (modelParams.interestRate - modelParams.dividendRate +
           1.0 / 2.0 * modelParams.volatility * modelParams.volatility) *
-             modelParams.maturityInYears) /
-        (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+             modelParams.timeHorizonInYears) /
+        (modelParams.volatility * std::sqrt(modelParams.timeHorizonInYears));
 
-    double d2 =
-        d1 - (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+    double d2 = d1 - (modelParams.volatility *
+                      std::sqrt(modelParams.timeHorizonInYears));
 
     double unsignedPriceAoN =
         modelParams.underlyingPrice *
-        std::exp(-modelParams.dividendRate * modelParams.maturityInYears) *
+        std::exp(-modelParams.dividendRate * modelParams.timeHorizonInYears) *
         normalCdf(d1);
 
     double unsignedPriceCoN =
         strike *
-        std::exp(-modelParams.interestRate * modelParams.maturityInYears) *
+        std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(d2);
 
     double bsPriceLongCoN = BsCloseForm{modelParams}.price(
@@ -207,7 +209,7 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     const double strike = 90;
     DigitalOptionParameters optionParamsCallLongAoN{
@@ -242,20 +244,20 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         (std::log(modelParams.underlyingPrice / strike) +
          (modelParams.interestRate - modelParams.dividendRate +
           1.0 / 2.0 * modelParams.volatility * modelParams.volatility) *
-             modelParams.maturityInYears) /
-        (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+             modelParams.timeHorizonInYears) /
+        (modelParams.volatility * std::sqrt(modelParams.timeHorizonInYears));
 
-    double d2 =
-        d1 - (modelParams.volatility * std::sqrt(modelParams.maturityInYears));
+    double d2 = d1 - (modelParams.volatility *
+                      std::sqrt(modelParams.timeHorizonInYears));
 
     double unsignedPriceAoN =
         modelParams.underlyingPrice *
-        std::exp(-modelParams.dividendRate * modelParams.maturityInYears) *
+        std::exp(-modelParams.dividendRate * modelParams.timeHorizonInYears) *
         normalCdf(-d1);
 
     double unsignedPriceCoN =
         strike *
-        std::exp(-modelParams.interestRate * modelParams.maturityInYears) *
+        std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(-d2);
 
     double bsPriceLongCoN = BsCloseForm{modelParams}.price(

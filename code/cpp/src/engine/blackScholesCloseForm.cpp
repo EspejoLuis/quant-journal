@@ -15,7 +15,7 @@ double BsCloseForm::price(
     const double vol = modelParams_.volatility;
     const double q = modelParams_.dividendRate;
     const double r = modelParams_.interestRate;
-    const double T = modelParams_.maturityInYears;
+    const double T = modelParams_.timeHorizonInYears;
 
     const double K = vanillaEuropeanOption.parameters().strike;
     const OptionDirection direction =
@@ -44,7 +44,7 @@ double BsCloseForm::price(
     const double vol = modelParams_.volatility;
     const double q = modelParams_.dividendRate;
     const double r = modelParams_.interestRate;
-    const double T = modelParams_.maturityInYears;
+    const double T = modelParams_.timeHorizonInYears;
 
     const double K = digitalEuropeanOption.parameters().strike;
     const OptionDirection direction =
@@ -78,7 +78,7 @@ void BsCloseForm::validateInputs() const {
     if (modelParams_.volatility < 0.0)
         throw std::invalid_argument("volatility cannot be negative");
 
-    if (modelParams_.maturityInYears <= 0)
+    if (modelParams_.timeHorizonInYears <= 0)
         throw std::invalid_argument(
             "maturity in years cannot be negative or zero");
 };

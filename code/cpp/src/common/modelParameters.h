@@ -5,5 +5,5 @@ struct ModelParameters {
     double interestRate;
     double dividendRate;
     double volatility;
-    double maturityInYears;
+    double timeHorizonInYears;
 };

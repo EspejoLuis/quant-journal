@@ -13,7 +13,7 @@ TEST_CASE("validateInputs returns error. Incorrect SimulationParameters ",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     auto [nP, nS] = GENERATE(table<int, int>({
         {-100, 5},
@@ -52,7 +52,7 @@ TEST_CASE("validateInputs returns error. Incorrect ModelParameters ",
                                 .interestRate = r,
                                 .dividendRate = q,
                                 .volatility = sigma,
-                                .maturityInYears = T};
+                                .timeHorizonInYears = T};
 
     SimulationParameters simParams{.nPaths = 10, .nSteps = 10};
 
@@ -66,7 +66,7 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.0,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
@@ -82,12 +82,12 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
         VanillaEuropeanOption{optionParamsCall};
 
     double deterministicDiscountFactor =
-        std::exp(-modelParams.interestRate * modelParams.maturityInYears);
+        std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears);
 
     double payoffAtMaturity =
         modelParams.underlyingPrice *
             std::exp((modelParams.interestRate - modelParams.dividendRate) *
-                     modelParams.maturityInYears) -
+                     modelParams.timeHorizonInYears) -
         optionParamsCall.strike;
 
     REQUIRE(mcEng.price(vanillaOption) ==
@@ -103,7 +103,7 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{
         .nPaths = 100'000, .nSteps = 100, .seed = 11};
@@ -137,7 +137,7 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 100};
 
@@ -170,7 +170,7 @@ TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 1'000, .nSteps = 10};
     SimulationParameters simParamsVarRed{.nPaths = 1'000,
@@ -211,7 +211,7 @@ TEST_CASE("SimulateGbmPath with Antithetic Variates returns price within 1 "
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParamsVarRed{.nPaths = 100'000,
                                          .nSteps = 10,
@@ -243,7 +243,7 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{
         .nPaths = 100'000, .nSteps = 100, .seed = 11};
@@ -289,7 +289,7 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.2,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 100};
 

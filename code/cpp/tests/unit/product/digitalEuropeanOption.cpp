@@ -12,7 +12,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Asset "
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.0,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
@@ -52,7 +52,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Asset "
     REQUIRE(callPrice + putPrice ==
             Catch::Approx(modelParams.underlyingPrice *
                           std::exp(-modelParams.dividendRate *
-                                   modelParams.maturityInYears))
+                                   modelParams.timeHorizonInYears))
                 .epsilon(1e-10));
 }
 
@@ -65,7 +65,7 @@ TEST_CASE(
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.0,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
@@ -105,7 +105,7 @@ TEST_CASE(
     REQUIRE(callPrice + putPrice ==
             -Catch::Approx(modelParams.underlyingPrice *
                            std::exp(-modelParams.dividendRate *
-                                    modelParams.maturityInYears))
+                                    modelParams.timeHorizonInYears))
                  .epsilon(1e-10));
 }
 
@@ -117,7 +117,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.0,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
@@ -156,7 +156,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
 
     REQUIRE(callPrice + putPrice ==
             Catch::Approx(strike * std::exp(-modelParams.interestRate *
-                                            modelParams.maturityInYears))
+                                            modelParams.timeHorizonInYears))
                 .epsilon(1e-10));
 }
 
@@ -168,7 +168,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Short Put-Call parity - Cash "
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
                                 .volatility = 0.0,
-                                .maturityInYears = 1.0};
+                                .timeHorizonInYears = 1.0};
 
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
@@ -207,7 +207,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Short Put-Call parity - Cash "
 
     REQUIRE(callPrice + putPrice ==
             -Catch::Approx(strike * std::exp(-modelParams.interestRate *
-                                             modelParams.maturityInYears))
+                                             modelParams.timeHorizonInYears))
                  .epsilon(1e-10));
 }
 

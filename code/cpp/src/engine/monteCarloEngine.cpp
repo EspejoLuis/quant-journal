@@ -16,7 +16,7 @@ double McEngine::price(const Instrument& instrument) {
     double sumPayoffsDiscounted = 0.0;
 
     double deterministicDiscountFactor =
-        std::exp(-modelParams_.interestRate * modelParams_.maturityInYears);
+        std::exp(-modelParams_.interestRate * modelParams_.timeHorizonInYears);
 
     for (const std::vector<double>& path : simulatedPaths) {
         sumPayoffsDiscounted +=
@@ -32,7 +32,7 @@ std::vector<std::vector<double>> McEngine::simulateGbmPath() {
     const double vol = modelParams_.volatility;
     const double q = modelParams_.dividendRate;
     const double r = modelParams_.interestRate;
-    const double T = modelParams_.maturityInYears;
+    const double T = modelParams_.timeHorizonInYears;
 
     const int nSteps = simParams_.nSteps;
     const int nPaths = simParams_.nPaths;
@@ -97,7 +97,7 @@ void McEngine::validateInputs() const {
     if (modelParams_.volatility < 0.0)
         throw std::invalid_argument("volatility cannot be negative");
 
-    if (modelParams_.maturityInYears <= 0)
+    if (modelParams_.timeHorizonInYears <= 0)
         throw std::invalid_argument(
             "maturity in years cannot be negative or zero");
 
