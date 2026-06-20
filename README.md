@@ -44,7 +44,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.h#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | Done |
 | Digital Option (European) | MC + BS closed-form + 1D PDE | [.h](code/cpp/src/product/digitalEuropeanOption.h#L1) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp#L1) | [tests](code/cpp/tests/unit/product/digitalEuropeanOption.cpp#L7) | In progress |
 | Digital Option (American) | MC + LSM | — | — | — | Planned |
-| Chooser Option | MC + closed-form | — | — | — | Planned |
+| Chooser Option | MC + closed-form | [.h](code/cpp/src/product/chooserEuropeanOption.h) | [.cpp](code/cpp/src/product/chooserEuropeanOption.cpp) | — | In progress |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |
 | Barrier Option | MC + 1D CN + Rubinstein-Reiner | — | — | — | Planned |
 | Lookback Option | MC + 2D CN | — | — | — | Planned |

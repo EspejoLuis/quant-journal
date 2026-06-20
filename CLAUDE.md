@@ -175,20 +175,23 @@ code/cpp/src/
 │   ├── blackScholesCloseForm.h/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.h
 │   └── pdePricingEngine.h/cpp ← derives Engine; 1D Forward Euler / Backward Euler / CN / 2D ADI (planned)
 └── product/
-    ├── instrument.h           ← abstract base: virtual double payoff(const vector<double>& path) const = 0
+    ├── instrument.h           ← non-pure-virtual base: payoff(path) default throws; products that can express payoff as f(path) override it; others (Chooser, Cliquet) derive but do not override
     ├── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
-    └── digitalEuropeanOption.h/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
+    ├── digitalEuropeanOption.h/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
+    └── chooserEuropeanOption.h/cpp ← derives Instrument (does NOT override payoff); ChooserOptionParameters {strike, choiceDateInYears, direction}; priced via ChooserMcEngine + BsCloseForm::price() overload
 ```
 
 **Design principles:**
 
 - `Engine` defines *how* to price (MC, PDE) — pure virtual `price(const Instrument&)`
-- `Instrument` defines *what* to price — pure virtual `payoff(const vector<double>& path) const`
-- `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency
+- `Instrument` defines *what* to price — `payoff(const vector<double>& path) const` is **non-pure virtual** (default throws); most products override it; products needing model params at intermediate dates (Chooser, Cliquet) derive from `Instrument` but do not override `payoff()`
+- `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency; `timeHorizonInYears` = full option maturity T for all products
 - `SimulationParameters` lives in `monteCarloEngine.h` — MC-specific; BS/PDE engines don't need it
 - `McEngine` stores `ModelParameters` and `SimulationParameters` as private value members, validated in the constructor
 - `McEngine::price()` computes discount factor per path inside the loop — ready for stochastic interest rates
-- MC engines call `instrument.payoff(path)` per path; BS/PDE engines implement `price()` directly without using `payoff()`
+- Generic `McEngine` prices products where payoff is a pure function of the path (vanilla, digital, Asian, barrier, lookback, variance swap, rainbow, worst-of, accumulator, autocallable)
+- Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines (e.g. `ChooserMcEngine`) — same pattern as `BsCloseForm` not deriving `Engine`
+- `ChooserMcEngine`: simulates to `choiceDateInYears` (T_c), computes max(BS_call, BS_put) at each S_{T_c} using model params + normalCdf, discounts by e^{-r*T_c}; remaining BS time = `timeHorizonInYears` − `choiceDateInYears`
 - `BsCloseForm` does NOT derive `Engine` — analytic engines need instrument-specific parameters (strike, type) that are not on the `Instrument` interface; forcing them through would require `dynamic_cast`
 - `simulateGbmPath`, `validateGbmInputs`, `createRng` are private methods of `McEngine` — tested through `price()`
 
