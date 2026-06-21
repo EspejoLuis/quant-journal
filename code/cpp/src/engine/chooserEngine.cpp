@@ -3,7 +3,6 @@
 #include "pathGeneration.hpp"
 #include <cmath>
 #include <numeric>
-#include <stdexcept>
 #include <vector>
 
 ChooserEngine::ChooserEngine(const ModelParameters& modelParams,
@@ -23,9 +22,9 @@ double ChooserEngine::price(
 
     const double strike = chooserEuropeanOption.parameters().strike;
 
-    std::vector<double> prices = std::vector<double>(simParams_.nPaths);
+    std::vector<double> prices = std::vector<double>(simulatedPaths.size());
 
-    for (int i = 0; i < simParams_.nPaths; i++) {
+    for (size_t i = 0; i < simulatedPaths.size(); ++i) {
         modelParamsBsCloseForm.underlyingPrice = simulatedPaths[i].back();
 
         VanillaEuropeanOption call(
