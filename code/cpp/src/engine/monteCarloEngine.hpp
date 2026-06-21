@@ -2,22 +2,10 @@
 #pragma once
 #include "engine.hpp"
 #include "modelParameters.hpp"
+#include "simulationParameters.hpp"
 #include <optional>
 #include <random>
 #include <vector>
-
-enum class VarianceReduction {
-    Antithetic,
-    ImportantSampling,
-    ControlVariates,
-};
-
-struct SimulationParameters {
-    int nPaths;
-    int nSteps;
-    std::optional<unsigned int> seed;
-    std::optional<VarianceReduction> varianceReduction;
-};
 
 class McEngine : public Engine {
 
@@ -31,12 +19,5 @@ class McEngine : public Engine {
     const ModelParameters modelParams_;
     const SimulationParameters simParams_;
 
-    // Returns matrix of nPaths x nSteps
-    std::vector<std::vector<double>> simulateGbmPath();
-
     void validateInputs() const;
-
-    std::mt19937 createRng(unsigned int seed);
-
-    std::mt19937 createRng();
 };

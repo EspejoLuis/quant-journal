@@ -4,7 +4,7 @@
 
 struct ChooserOptionParameters {
     double strike;
-    double choiceDateInYears; // Date at which max(C,P)
+    double maturity;
     OptionDirection direction;
 };
 

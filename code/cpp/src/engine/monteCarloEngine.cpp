@@ -1,4 +1,5 @@
 #include "monteCarloEngine.hpp"
+#include "pathGeneration.hpp"
 #include <cmath>
 #include <stdexcept>
 
@@ -11,7 +12,8 @@ McEngine::McEngine(const ModelParameters& modelParams,
 
 double McEngine::price(const Instrument& instrument) {
 
-    std::vector<std::vector<double>> simulatedPaths = simulateGbmPath();
+    std::vector<std::vector<double>> simulatedPaths =
+        simulateGbmPath(modelParams_, simParams_);
 
     double sumPayoffsDiscounted = 0.0;
 
@@ -24,69 +26,6 @@ double McEngine::price(const Instrument& instrument) {
     }
 
     return sumPayoffsDiscounted / simulatedPaths.size();
-};
-
-std::vector<std::vector<double>> McEngine::simulateGbmPath() {
-
-    const double s0 = modelParams_.underlyingPrice;
-    const double vol = modelParams_.volatility;
-    const double q = modelParams_.dividendRate;
-    const double r = modelParams_.interestRate;
-    const double T = modelParams_.timeHorizonInYears;
-
-    const int nSteps = simParams_.nSteps;
-    const int nPaths = simParams_.nPaths;
-    const std::optional<unsigned int> seed = simParams_.seed;
-    const std::optional<VarianceReduction> varReduction =
-        simParams_.varianceReduction;
-
-    // Standard Normal Distribution
-    std::normal_distribution<double> distr(0.0, 1.0);
-    std::mt19937 rng = seed ? createRng(*seed) : createRng();
-
-    const double dt = T / nSteps;
-    const double expFactor =
-        std::exp((r - q) * dt - 1.0 / 2.0 * vol * vol * dt);
-    const double volTime = vol * std::sqrt(dt);
-
-    if (varReduction && varReduction == VarianceReduction::Antithetic) {
-
-        const int nPathAdjusted = nPaths * 2;
-
-        std::vector<std::vector<double>> simulatedPrices(
-            nPathAdjusted, std::vector<double>(nSteps + 1, s0));
-
-        for (int i = 0; i < nPaths; i++) {
-            for (int j = 0; j < nSteps; j++) {
-
-                double z = distr(rng);
-
-                simulatedPrices[i][j + 1] =
-                    simulatedPrices[i][j] * expFactor * std::exp(volTime * z);
-
-                simulatedPrices[nPathAdjusted - 1 - i][j + 1] =
-                    simulatedPrices[nPathAdjusted - 1 - i][j] * expFactor *
-                    std::exp(volTime * -z);
-            }
-        }
-        return simulatedPrices;
-
-    } else {
-
-        std::vector<std::vector<double>> simulatedPrices(
-            nPaths, std::vector<double>(nSteps + 1, s0));
-
-        for (int i = 0; i < nPaths; i++) {
-            for (int j = 0; j < nSteps; j++) {
-
-                double z = distr(rng);
-
-                simulatedPrices[i][j + 1] =
-                    simulatedPrices[i][j] * expFactor * std::exp(volTime * z);
-            };
-        }
-        return simulatedPrices;
-    }
 };
 
 void McEngine::validateInputs() const {
@@ -115,12 +54,3 @@ void McEngine::validateInputs() const {
         simParams_.varianceReduction)
         throw std::invalid_argument("invalid VarianceReduction");
 }
-
-std::mt19937 McEngine::createRng() {
-    std::random_device randomDevice;
-    return std::mt19937(randomDevice());
-};
-
-std::mt19937 McEngine::createRng(unsigned int seed) {
-    return std::mt19937(seed);
-};
