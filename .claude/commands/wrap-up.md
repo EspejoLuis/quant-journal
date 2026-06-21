@@ -31,6 +31,8 @@
 
 9. Verify that every feature requiring coding in CLAUDE.md has a corresponding row in the correct table in README.md (Models, Numerical Methods, or Products).
 
-Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6/7/9 unless explicitly stated in the step. For point 8 you have to tell me which cards are you planning to add with a summary, I will confirm or not. Complete all steps and report a summary at the end for each point.
+10. **CLAUDE.md date audit** — always check whether the block and week dates in CLAUDE.md are still accurate given the actual pace of the current session. If any week ran longer than planned, shift all subsequent dates forward accordingly and update the block header ranges too (e.g. "~14 weeks, Jun 5 – Sep 5"). Do this even if no architectural changes were made.
+
+Use the style of previous log entries. Do not ask for confirmation on steps 1/2/3/4/5/6/7/9/10 unless explicitly stated in the step. For point 8 you have to tell me which cards are you planning to add with a summary, I will confirm or not. Complete all steps and report a summary at the end for each point.
 
 [Modern-Computational-Finance-AAD-and-Parallel-Simulations]: ../../books/Modern-Computational-Finance-AAD-and-Parallel-Simulations.md "AAD and // Simulation"
