@@ -1,4 +1,4 @@
-#include "digitalEuropeanOption.h"
+#include "digitalEuropeanOption.hpp"
 
 DigitalEuropeanOption::DigitalEuropeanOption(
     const DigitalOptionParameters& optParams)

@@ -1,8 +1,8 @@
-#include "monteCarloEngine.h"
-#include "blackScholesCloseForm.h"
-#include "digitalEuropeanOption.h"
-#include "mathFunctions.h"
-#include "vanillaEuropeanOption.h"
+#include "monteCarloEngine.hpp"
+#include "blackScholesCloseForm.hpp"
+#include "digitalEuropeanOption.hpp"
+#include "mathFunctions.hpp"
+#include "vanillaEuropeanOption.hpp"
 #include <catch2/catch_all.hpp>
 #include <numeric>
 

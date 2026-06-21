@@ -1,5 +1,5 @@
-#include "digitalEuropeanOption.h"
-#include "monteCarloEngine.h"
+#include "digitalEuropeanOption.hpp"
+#include "monteCarloEngine.hpp"
 #include <catch2/catch_all.hpp>
 #include <numeric>
 #include <stdexcept>

@@ -1,4 +1,4 @@
-#include "mathFunctions.h"
+#include "mathFunctions.hpp"
 #include <catch2/catch_all.hpp>
 #include <stdexcept>
 

@@ -1,5 +1,5 @@
-#include "vanillaEuropeanOption.h"
-#include "monteCarloEngine.h"
+#include "vanillaEuropeanOption.hpp"
+#include "monteCarloEngine.hpp"
 #include <catch2/catch_all.hpp>
 #include <numeric>
 #include <stdexcept>

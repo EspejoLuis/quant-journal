@@ -1,9 +1,9 @@
 
 // blackScholesEngine.h - Black Scholes Closed Form computation.
 #pragma once
-#include "digitalEuropeanOption.h"
-#include "modelParameters.h"
-#include "vanillaEuropeanOption.h"
+#include "digitalEuropeanOption.hpp"
+#include "modelParameters.hpp"
+#include "vanillaEuropeanOption.hpp"
 
 class BsCloseForm {
 

@@ -13,7 +13,7 @@ find_package(Catch2 REQUIRED)
 # List the .cpp files to compile. Each becomes a .o object file; all .o files
 # are archived together into the static library libquantJournal.a below.
 set(SOURCES
-    src/common/mathFunctions.h
+    src/common/mathFunctions.hpp
     src/engine/monteCarloEngine.cpp
     src/engine/blackScholesCloseForm.cpp
     src/product/vanillaEuropeanOption.cpp

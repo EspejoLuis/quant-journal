@@ -1,7 +1,7 @@
 // monteCarloEngine.h - Monte Carlo generator.
 #pragma once
-#include "engine.h"
-#include "modelParameters.h"
+#include "engine.hpp"
+#include "modelParameters.hpp"
 #include <optional>
 #include <random>
 #include <vector>

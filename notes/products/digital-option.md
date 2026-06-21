@@ -82,7 +82,7 @@ At $S_T = K$ exactly (probability zero under GBM): the call uses $\geq$ (claims 
 
 **MC:** `McEngine::price()` counts paths where the indicator fires; `payoff()` returns the payout amount per path. No structural change to the engine.
 
-**Files:** [digitalEuropeanOption.h](../../code/cpp/src/product/digitalEuropeanOption.h), [digitalEuropeanOption.cpp](../../code/cpp/src/product/digitalEuropeanOption.cpp).
+**Files:** [digitalEuropeanOption.hpp](../../code/cpp/src/product/digitalEuropeanOption.hpp), [digitalEuropeanOption.cpp](../../code/cpp/src/product/digitalEuropeanOption.cpp).
 
 **BS close form:** `BsCloseForm::price(const DigitalEuropeanOption&)` overload — computes `payoutFactor` ($S_0 e^{-qT}$ vs $K e^{-rT}$) and `dFactor` ($\pm d_1$ vs $\pm d_2$) independently.
 

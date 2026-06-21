@@ -47,7 +47,7 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 
 | Thing | Convention | Example |
 | ----- | ---------- | ------- |
-| Files | `lowerCamelCase`, `.h` / `.cpp` | `mcEngine.h`, `barrier.cpp` |
+| Files | `lowerCamelCase`, `.hpp` / `.cpp` | `mcEngine.hpp`, `barrier.cpp` |
 | Types (class, struct, enum) | `UpperCamelCase` | `class GbmPath` |
 | Functions | `lowerCamelCase` | `simulateGbmPath()` |
 | Variables | `lowerCamelCase` (or short math names) | `spotPrice`, `S0`, `sigma` |

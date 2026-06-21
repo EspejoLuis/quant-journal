@@ -1,4 +1,4 @@
-#include "chooserEuropeanOption.h"
+#include "chooserEuropeanOption.hpp"
 
 ChooserEuropeanOption::ChooserEuropeanOption(
     const ChooserOptionParameters& optParams)

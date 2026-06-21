@@ -1,4 +1,4 @@
-#include "monteCarloEngine.h"
+#include "monteCarloEngine.hpp"
 #include <cmath>
 #include <stdexcept>
 

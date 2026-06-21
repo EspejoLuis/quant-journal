@@ -1,4 +1,4 @@
-#include "vanillaEuropeanOption.h"
+#include "vanillaEuropeanOption.hpp"
 #include <algorithm>
 #include <numeric>
 #include <stdexcept>

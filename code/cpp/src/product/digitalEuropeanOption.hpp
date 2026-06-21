@@ -1,6 +1,6 @@
 #pragma once
-#include "instrument.h"
-#include "optionParameters.h"
+#include "instrument.hpp"
+#include "optionParameters.hpp"
 
 enum class DigitalType { CashOrNothing, AssetOrNothing };
 

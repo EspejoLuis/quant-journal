@@ -1,5 +1,5 @@
-#include "blackScholesCloseForm.h"
-#include "mathFunctions.h"
+#include "blackScholesCloseForm.hpp"
+#include "mathFunctions.hpp"
 #include <cmath>
 
 BsCloseForm::BsCloseForm(const ModelParameters& modelParams)
