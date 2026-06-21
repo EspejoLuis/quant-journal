@@ -165,20 +165,23 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 ```text
 code/cpp/src/
 ├── common/
-│   ├── modelParameters.h     ← ModelParameters struct (shared by engine + product)
-│   ├── optionParameters.h    ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
-│   └── mathFunctions.h       ← mean, sampleVariance, sampleStdDev, normalCdf (header-only inline)
+│   ├── modelParameters.hpp      ← ModelParameters struct (shared by engine + product)
+│   ├── optionParameters.hpp     ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
+│   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf (header-only inline)
+│   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
+│   └── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
 ├── engine/
-│   ├── engine.h              ← abstract base: virtual double price(const Instrument&) = 0
-│   ├── monteCarloEngine.h    ← SimulationParameters struct + McEngine class (derives Engine)
-│   ├── monteCarloEngine.cpp  ← McEngine::price(), simulateGbmPath(), validateGbmInputs(), createRng() (private)
-│   ├── blackScholesCloseForm.h/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.h
-│   └── pdePricingEngine.h/cpp ← derives Engine; 1D Forward Euler / Backward Euler / CN / 2D ADI (planned)
+│   ├── engine.hpp               ← abstract base: virtual double price(const Instrument&) = 0
+│   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters
+│   ├── monteCarloEngine.cpp     ← McEngine::price(), validateGbmInputs(); calls simulateGbmPath() from pathGeneration.hpp
+│   ├── blackScholesCloseForm.hpp/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.hpp
+│   ├── chooserEngine.hpp/cpp    ← ChooserEngine; does NOT derive Engine; price(const ChooserEuropeanOption&); simulates to T_c via simulateGbmPath(), BS sub-prices per path, discounts by e^{-rT_c}
+│   └── pdePricingEngine.hpp/cpp ← derives Engine; 1D Forward Euler / Backward Euler / CN / 2D ADI (planned)
 └── product/
-    ├── instrument.h           ← non-pure-virtual base: payoff(path) default throws; products that can express payoff as f(path) override it; others (Chooser, Cliquet) derive but do not override
-    ├── vanillaEuropeanOption.h/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
-    ├── digitalEuropeanOption.h/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
-    └── chooserEuropeanOption.h/cpp ← derives Instrument (does NOT override payoff); ChooserOptionParameters {strike, choiceDateInYears, direction}; priced via ChooserMcEngine + BsCloseForm::price() overload
+    ├── instrument.hpp              ← non-pure-virtual base: payoff(path) default throws; products that can express payoff as f(path) override it; others (Chooser, Cliquet) derive but do not override
+    ├── vanillaEuropeanOption.hpp/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
+    ├── digitalEuropeanOption.hpp/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
+    └── chooserEuropeanOption.hpp/cpp ← derives Instrument (does NOT override payoff); ChooserOptionParameters {strike, maturity (=T), direction}; ModelParameters.timeHorizonInYears = T_c; priced via ChooserEngine + BsCloseForm::price() overload
 ```
 
 **Design principles:**
@@ -186,14 +189,14 @@ code/cpp/src/
 - `Engine` defines *how* to price (MC, PDE) — pure virtual `price(const Instrument&)`
 - `Instrument` defines *what* to price — `payoff(const vector<double>& path) const` is **non-pure virtual** (default throws); most products override it; products needing model params at intermediate dates (Chooser, Cliquet) derive from `Instrument` but do not override `payoff()`
 - `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency; `timeHorizonInYears` = full option maturity T for all products
-- `SimulationParameters` lives in `monteCarloEngine.h` — MC-specific; BS/PDE engines don't need it
+- `SimulationParameters` lives in `common/simulationParameters.hpp` — shared by all MC engines; BS/PDE engines don't need it
 - `McEngine` stores `ModelParameters` and `SimulationParameters` as private value members, validated in the constructor
 - `McEngine::price()` computes discount factor per path inside the loop — ready for stochastic interest rates
 - Generic `McEngine` prices products where payoff is a pure function of the path (vanilla, digital, Asian, barrier, lookback, variance swap, rainbow, worst-of, accumulator, autocallable)
-- Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines (e.g. `ChooserMcEngine`) — same pattern as `BsCloseForm` not deriving `Engine`
-- `ChooserMcEngine`: simulates to `choiceDateInYears` (T_c), computes max(BS_call, BS_put) at each S_{T_c} using model params + normalCdf, discounts by e^{-r*T_c}; remaining BS time = `timeHorizonInYears` − `choiceDateInYears`
+- Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines (e.g. `ChooserEngine`) — same pattern as `BsCloseForm` not deriving `Engine`
+- `ChooserEngine`: `ModelParameters.timeHorizonInYears` = T_c (simulation horizon); `ChooserOptionParameters.maturity` = T (full expiry); simulates to T_c, constructs `ModelParameters` copy per path with `underlyingPrice = S_{T_c}` and `timeHorizonInYears = T - T_c`, discounts by e^{-r*T_c}
 - `BsCloseForm` does NOT derive `Engine` — analytic engines need instrument-specific parameters (strike, type) that are not on the `Instrument` interface; forcing them through would require `dynamic_cast`
-- `simulateGbmPath`, `validateGbmInputs`, `createRng` are private methods of `McEngine` — tested through `price()`
+- `simulateGbmPath` and `createRng` are free inline functions in `common/pathGeneration.hpp` — stateless (CP.1), reusable by any engine, tested through `McEngine::price()` and `ChooserEngine::price()`
 
 **`monteCarloEngine` grows one function per block:**
 
@@ -256,7 +259,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 
 ## Weekly Schedule
 
-### Block A — GBM engine + BS products (~13 weeks, Jun 5 – Aug 30)
+### Block A — GBM engine + BS products (~14 weeks, Jun 5 – Sep 5)
 
 #### Week 1 — Jun 5–10: Engine Seed
 
@@ -274,7 +277,7 @@ Build the minimum viable engine — one path generator, one PDE solver, one prod
 
 ---
 
-#### Week 2 — Jun 10–20: Digital Option + Chooser Option
+#### Week 2 — Jun 10–28: Digital Option + Chooser Option
 
 No new engine code — these are pure payoff changes on top of the GBM engine.
 
@@ -296,7 +299,7 @@ Code: `code/cpp/products/chooser.cpp`
 
 ---
 
-#### Weeks 3–4 — Jun 21 – Jul 6: Asian Option
+#### Weeks 3–4 — Jun 29 – Jul 13: Asian Option
 
 First engine extension: add path-average accumulation.
 
@@ -312,7 +315,7 @@ Code: `code/cpp/products/asian.cpp`
 
 ---
 
-#### Weeks 5–6 — Jul 7–22: Barrier Option
+#### Weeks 5–6 — Jul 14–29: Barrier Option
 
 Engine extension: barrier condition checking in MC + absorbing BC in PDE.
 
@@ -327,7 +330,7 @@ Code: `code/cpp/products/barrier.cpp`
 
 ---
 
-#### Weeks 7–8 — Jul 23 – Aug 7: Lookback Option
+#### Weeks 7–8 — Jul 30 – Aug 13: Lookback Option
 
 Engine extension: running max/min tracking + 2D PDE.
 
@@ -342,7 +345,7 @@ Code: `code/cpp/products/lookback.cpp`
 
 ---
 
-#### Weeks 9–10 — Aug 8–23: Variance Swap + Volatility Swap
+#### Weeks 9–10 — Aug 14–28: Variance Swap + Volatility Swap
 
 Engine extension: log-return accumulation.
 
@@ -366,7 +369,7 @@ Code: `code/cpp/products/vol_swap.cpp`
 
 ---
 
-#### Week 11 — Aug 24–30: American MC (Longstaff-Schwartz)
+#### Week 11 — Aug 29 – Sep 5: American MC (Longstaff-Schwartz)
 
 Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
 

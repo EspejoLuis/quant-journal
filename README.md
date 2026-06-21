@@ -6,11 +6,11 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 ### Models
 
-| Model | Feature | `.h` | `.cpp` | Tests | Status |
-| ----- | ------- | ---- | ------ | ----- | ------ |
-| **GBM** | Path simulation (`simulateGbmPath`) | [.h](code/cpp/src/engine/monteCarloEngine.hpp#L35) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L29) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | Done |
-| | Antithetic variates (`VarianceReduction::Antithetic`) | [.h](code/cpp/src/engine/monteCarloEngine.hpp#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
-| | Closed-form (`BsCloseForm`) | [.h](code/cpp/src/engine/blackScholesCloseForm.hpp#L7) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp#L8) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp#L5) | Done |
+| Model | Feature | `.hpp` | `.cpp` | Tests | Status |
+| ----- | ------- | ------ | ------ | ----- | ------ |
+| **GBM** | Path simulation (`simulateGbmPath`) | [.hpp](code/cpp/src/common/pathGeneration.hpp) | — (header-only) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | Done |
+| | Antithetic variates (`VarianceReduction::Antithetic`) | [.hpp](code/cpp/src/common/simulationParameters.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
+| | Closed-form (`BsCloseForm`) | [.hpp](code/cpp/src/engine/blackScholesCloseForm.hpp) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp) | Done |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | — | — | Planned |
 | | Forward PDE calibration | — | — | — | Planned |
 | **Heston** | Euler-Milstein with variance reflection | — | — | — | Planned |
@@ -22,10 +22,11 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 ### Numerical Methods
 
-| Method | Feature | `.h` | `.cpp` | Tests | Status |
-| ------ | ------- | ---- | ------ | ----- | ------ |
-| **Monte Carlo** | GBM engine (`McEngine`) | [.h](code/cpp/src/engine/monteCarloEngine.hpp#L22) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L12) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L8) | Done |
-| | Antithetic variates | [.h](code/cpp/src/engine/monteCarloEngine.hpp#L9) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
+| Method | Feature | `.hpp` | `.cpp` | Tests | Status |
+| ------ | ------- | ------ | ------ | ----- | ------ |
+| **Monte Carlo** | GBM engine (`McEngine`) | [.hpp](code/cpp/src/engine/monteCarloEngine.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
+| | Antithetic variates | [.hpp](code/cpp/src/common/simulationParameters.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
+| | Chooser engine (`ChooserEngine`) | [.hpp](code/cpp/src/engine/chooserEngine.hpp) | [.cpp](code/cpp/src/engine/chooserEngine.cpp) | — | In progress |
 | | Control variates | — | — | — | Planned |
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
@@ -39,10 +40,10 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 ### Products
 
-| Product | Method | `.h` | `.cpp` | Tests | Status |
-| ------- | ------ | ---- | ------ | ----- | ------ |
-| Vanilla European Option | MC + BS closed-form | [.h](code/cpp/src/product/vanillaEuropeanOption.hpp#L13) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp#L6) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp#L7) | Done |
-| Digital Option (European) | MC + BS closed-form + 1D PDE | [.h](code/cpp/src/product/digitalEuropeanOption.hpp#L1) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp#L1) | [tests](code/cpp/tests/unit/product/digitalEuropeanOption.cpp#L7) | In progress |
+| Product | Method | `.hpp` | `.cpp` | Tests | Status |
+| ------- | ------ | ------ | ------ | ----- | ------ |
+| Vanilla European Option | MC + BS closed-form | [.hpp](code/cpp/src/product/vanillaEuropeanOption.hpp) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp) | Done |
+| Digital Option (European) | MC + BS closed-form + 1D PDE | [.hpp](code/cpp/src/product/digitalEuropeanOption.hpp) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp) | [tests](code/cpp/tests/unit/product/digitalEuropeanOption.cpp) | In progress |
 | Digital Option (American) | MC + LSM | — | — | — | Planned |
 | Chooser Option | MC + closed-form | [.h](code/cpp/src/product/chooserEuropeanOption.hpp) | [.cpp](code/cpp/src/product/chooserEuropeanOption.cpp) | — | In progress |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |
