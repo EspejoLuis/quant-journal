@@ -279,7 +279,7 @@ Build the minimum viable engine — one path generator, one PDE solver, one prod
 
 #### Week 2 — Jun 10–28: Digital Option + Chooser Option
 
-No new engine code — these are pure payoff changes on top of the GBM engine.
+No new engine code — these are pure payoff changes on top of the GBM engine. PDE engine (1D CN) deferred to Weeks 3–4.
 
 **Digital Option**
 Note: `notes/products/digital-option.md`
@@ -299,9 +299,9 @@ Code: `code/cpp/products/chooser.cpp`
 
 ---
 
-#### Weeks 3–4 — Jun 29 – Jul 13: Asian Option
+#### Weeks 3–4 — Jun 29 – Jul 13: PDE Engine + Asian Option
 
-First engine extension: add path-average accumulation.
+First engine extension: add path-average accumulation. Also complete PDE engine (1D Forward Euler, Backward Euler, Crank-Nicolson) deferred from Week 2.
 
 Note: `notes/products/asian-option.md`
 Code: `code/cpp/products/asian.cpp`

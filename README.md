@@ -26,7 +26,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | ------ | ------- | ------ | ------ | ----- | ------ |
 | **Monte Carlo** | GBM engine (`McEngine`) | [.hpp](code/cpp/src/engine/monteCarloEngine.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
 | | Antithetic variates | [.hpp](code/cpp/src/common/simulationParameters.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
-| | Chooser engine (`ChooserEngine`) | [.hpp](code/cpp/src/engine/chooserEngine.hpp) | [.cpp](code/cpp/src/engine/chooserEngine.cpp) | — | In progress |
+| | Chooser engine (`ChooserEngine`) | [.hpp](code/cpp/src/engine/chooserEngine.hpp) | [.cpp](code/cpp/src/engine/chooserEngine.cpp) | [tests](code/cpp/tests/integration/engine/chooserEngine.cpp) | Done |
 | | Control variates | — | — | — | Planned |
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
@@ -45,7 +45,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Vanilla European Option | MC + BS closed-form | [.hpp](code/cpp/src/product/vanillaEuropeanOption.hpp) | [.cpp](code/cpp/src/product/vanillaEuropeanOption.cpp) | [tests](code/cpp/tests/unit/product/vanillaEuropeanOption.cpp) | Done |
 | Digital Option (European) | MC + BS closed-form + 1D PDE | [.hpp](code/cpp/src/product/digitalEuropeanOption.hpp) | [.cpp](code/cpp/src/product/digitalEuropeanOption.cpp) | [tests](code/cpp/tests/unit/product/digitalEuropeanOption.cpp) | In progress |
 | Digital Option (American) | MC + LSM | — | — | — | Planned |
-| Chooser Option | MC + closed-form | [.h](code/cpp/src/product/chooserEuropeanOption.hpp) | [.cpp](code/cpp/src/product/chooserEuropeanOption.cpp) | — | In progress |
+| Chooser Option | MC + closed-form | [.hpp](code/cpp/src/product/chooserEuropeanOption.hpp) | [.cpp](code/cpp/src/product/chooserEuropeanOption.cpp) | [tests](code/cpp/tests/unit/product/chooserEuropeanOption.cpp) | Done |
 | Asian Option | MC + control variates + LSM | — | — | — | Planned |
 | Barrier Option | MC + 1D CN + Rubinstein-Reiner | — | — | — | Planned |
 | Lookback Option | MC + 2D CN | — | — | — | Planned |
