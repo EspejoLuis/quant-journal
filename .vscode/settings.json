@@ -40,6 +40,7 @@
       { "name": "Common: Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
       { "name": "Engine: Chooser Engine", "pattern": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration" },
       { "name": "Product: Chooser European Option", "pattern": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit" },
+      { "name": "Product: Instrument", "pattern": "${workspaceFolder}/code/cpp/build/instrumentUnit" },
   
     ],
    "[markdown]": {

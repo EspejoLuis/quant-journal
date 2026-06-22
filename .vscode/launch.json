@@ -48,7 +48,16 @@
             "program": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit",
             "args": [],
             "cwd": "${workspaceFolder}"
-        },        {
+        },
+        {
+            "name": "Debug instrumentUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/instrumentUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
             "name": "Debug chooserEngineIntegration",
             "type": "lldb",
             "request": "launch",

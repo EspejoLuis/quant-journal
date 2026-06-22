@@ -40,6 +40,7 @@ add_executable(blackScholesCloseFormUnit  tests/unit/engine/blackScholesCloseFor
 add_executable(vanillaEuropeanOptionUnit tests/unit/product/vanillaEuropeanOption.cpp)
 add_executable(digitalEuropeanOptionUnit tests/unit/product/digitalEuropeanOption.cpp)
 add_executable(chooserEuropeanOptionUnit tests/unit/product/chooserEuropeanOption.cpp)
+add_executable(instrumentUnit tests/unit/product/instrument.cpp)
 add_executable(chooserEngineIntegration tests/integration/engine/chooserEngine.cpp)
 add_executable(mathFunctionsUnit tests/unit/common/mathFunctions.cpp)
 
@@ -52,6 +53,7 @@ target_include_directories(blackScholesCloseFormUnit  PRIVATE tests/unit)
 target_include_directories(vanillaEuropeanOptionUnit PRIVATE tests/unit)
 target_include_directories(digitalEuropeanOptionUnit PRIVATE tests/unit)
 target_include_directories(chooserEuropeanOptionUnit PRIVATE tests/unit)
+target_include_directories(instrumentUnit PRIVATE tests/unit)
 target_include_directories(chooserEngineIntegration PRIVATE tests/integration)
 target_include_directories(mathFunctionsUnit PRIVATE tests/unit)
 
@@ -65,6 +67,7 @@ target_link_libraries(blackScholesCloseFormUnit  quantJournal Catch2::Catch2With
 target_link_libraries(vanillaEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
 target_link_libraries(digitalEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
 target_link_libraries(chooserEuropeanOptionUnit quantJournal Catch2::Catch2WithMain)
+target_link_libraries(instrumentUnit quantJournal Catch2::Catch2WithMain)
 target_link_libraries(chooserEngineIntegration quantJournal Catch2::Catch2WithMain)
 target_link_libraries(mathFunctionsUnit quantJournal Catch2::Catch2WithMain)
 
@@ -77,6 +80,7 @@ add_test(NAME blackScholesCloseFormUnit  COMMAND blackScholesCloseFormUnit)
 add_test(NAME vanillaEuropeanOptionUnit COMMAND vanillaEuropeanOptionUnit)
 add_test(NAME digitalEuropeanOptionUnit COMMAND digitalEuropeanOptionUnit)
 add_test(NAME chooserEuropeanOptionUnit COMMAND chooserEuropeanOptionUnit)
+add_test(NAME instrumentUnit COMMAND instrumentUnit)
 add_test(NAME chooserEngineIntegration COMMAND chooserEngineIntegration)
 add_test(NAME mathFunctionsUnit COMMAND mathFunctionsUnit)
 
@@ -107,6 +111,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_compile_options(vanillaEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(digitalEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(chooserEuropeanOptionUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(instrumentUnit                   PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(chooserEngineIntegration        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(blackScholesCloseFormUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(mathFunctionsUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
@@ -117,6 +122,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_link_options(vanillaEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
     target_link_options(digitalEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
     target_link_options(chooserEuropeanOptionUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(instrumentUnit PRIVATE -fprofile-instr-generate)
     target_link_options(chooserEngineIntegration PRIVATE -fprofile-instr-generate)
     target_link_options(blackScholesCloseFormUnit PRIVATE -fprofile-instr-generate)
     target_link_options(mathFunctionsUnit PRIVATE -fprofile-instr-generate)
@@ -138,8 +144,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         monteCarloEngine.profraw 
         vanillaEuropeanOption.profraw
         digitalEuropeanOption.profraw 
-        chooserEuropeanOption.profraw 
-        chooserEngineIntegration.profraw 
+        chooserEuropeanOption.profraw
+        chooserEngine.profraw
+        instrument.profraw
         blackScholesCloseForm.profraw
         mathFunctions.profraw
         merged.profdata
@@ -154,6 +161,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:digitalEuropeanOptionUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=chooserEuropeanOption.profraw
                 $<TARGET_FILE:chooserEuropeanOptionUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=instrument.profraw
+                $<TARGET_FILE:instrumentUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=chooserEngine.profraw
                 $<TARGET_FILE:chooserEngineIntegration>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=blackScholesCloseForm.profraw
@@ -168,6 +177,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         digitalEuropeanOption.profraw
         chooserEuropeanOption.profraw
         chooserEngine.profraw
+        instrument.profraw
         blackScholesCloseForm.profraw
         mathFunctions.profraw
         -o merged.profdata
@@ -178,6 +188,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -object=$<TARGET_FILE:digitalEuropeanOptionUnit>
                 -object=$<TARGET_FILE:chooserEuropeanOptionUnit>
+                -object=$<TARGET_FILE:instrumentUnit>
                 -object=$<TARGET_FILE:chooserEngineIntegration>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
@@ -196,6 +207,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 -object=$<TARGET_FILE:vanillaEuropeanOptionUnit>
                 -object=$<TARGET_FILE:digitalEuropeanOptionUnit>
                 -object=$<TARGET_FILE:chooserEuropeanOptionUnit>
+                -object=$<TARGET_FILE:instrumentUnit>
                 -object=$<TARGET_FILE:chooserEngineIntegration>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
@@ -220,8 +232,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         DEPENDS monteCarloEngineUnit 
                 vanillaEuropeanOptionUnit 
                 digitalEuropeanOptionUnit 
-                chooserEuropeanOptionUnit 
-                chooserEngineIntegration 
+                chooserEuropeanOptionUnit
+                instrumentUnit
+                chooserEngineIntegration
                 blackScholesCloseFormUnit 
                 mathFunctionsUnit
 
