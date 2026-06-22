@@ -41,18 +41,34 @@ TEST_CASE("ChooserEuropeanOption returns error. Negative Strike.",
                       std::invalid_argument);
 }
 
-TEST_CASE("ChooserEuropeanOption returns correct.", "[ChooserEuropeanOption]") {
+TEST_CASE("ChooserEuropeanOption long/short returns correct.",
+          "[ChooserEuropeanOption]") {
 
-    ChooserOptionParameters optionParamsCall{
+    ChooserOptionParameters optionParamsCallLong{
         .strike = 10,
         .maturity = 1,
         .direction = OptionDirection::Long,
     };
 
-    ChooserEuropeanOption chooserOption =
-        ChooserEuropeanOption{optionParamsCall};
+    ChooserEuropeanOption chooserOptionLong =
+        ChooserEuropeanOption{optionParamsCallLong};
 
-    CHECK(chooserOption.parameters().direction == optionParamsCall.direction);
-    CHECK(chooserOption.parameters().maturity == optionParamsCall.maturity);
-    CHECK(chooserOption.parameters().strike == optionParamsCall.strike);
+    CHECK(chooserOptionLong.parameters().direction ==
+          optionParamsCallLong.direction);
+    CHECK(chooserOptionLong.parameters().maturity ==
+          optionParamsCallLong.maturity);
+    CHECK(chooserOptionLong.parameters().strike == optionParamsCallLong.strike);
+
+    ChooserOptionParameters optionParamsCallShort{
+        .strike = 10, .maturity = 1, .direction = OptionDirection::Short};
+
+    ChooserEuropeanOption chooserOptionShort =
+        ChooserEuropeanOption{optionParamsCallShort};
+
+    CHECK(chooserOptionShort.parameters().direction ==
+          optionParamsCallShort.direction);
+    CHECK(chooserOptionShort.parameters().maturity ==
+          optionParamsCallShort.maturity);
+    CHECK(chooserOptionShort.parameters().strike ==
+          optionParamsCallShort.strike);
 }
