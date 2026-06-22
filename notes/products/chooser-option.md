@@ -32,10 +32,10 @@ The second term is a put payoff on $S_{T_c}$ with adjusted strike $K^* = K e^{-(
 
 ### Closed-form price at $t = 0$
 
-$$V_0 = C_{BS}(S_0, K, T, r, q, \sigma) + e^{-qT_c}\, P_{BS}(S_0,\; K e^{-(r-q)(T-T_c)},\; T_c,\; r, q, \sigma)$$
+$$V_0 = C_{BS}(S_0, K, T, r, q, \sigma) + e^{-q(T-T_c)}\, P_{BS}(S_0,\; K e^{-(r-q)(T-T_c)},\; T_c,\; r, q, \sigma)$$
 
 - First term: vanilla call, full maturity $T$, strike $K$.
-- Second term: put expiring at $T_c$, strike reduced to $K^* = K e^{-(r-q)(T-T_c)}$ (future value of $K$ from $T$ discounted back to $T_c$), scaled by $e^{-qT_c}$.
+- Second term: put expiring at $T_c$, strike reduced to $K^* = K e^{-(r-q)(T-T_c)}$ (future value of $K$ from $T$ discounted back to $T_c$), scaled by $e^{-q(T-T_c)}$.
 
 For $q = 0$ this simplifies to:
 

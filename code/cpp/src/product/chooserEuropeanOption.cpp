@@ -13,7 +13,7 @@ const ChooserOptionParameters& ChooserEuropeanOption::parameters() const {
 
 void ChooserEuropeanOption::validateInputs() const {
 
-    if (optParams_.choiceDateInYears <= 0)
+    if (optParams_.maturity <= 0)
         throw std::invalid_argument(
             "choice date in years cannot be negative or zero");
 

@@ -38,7 +38,10 @@
       { "name": "Product: Digital European Option", "pattern": "${workspaceFolder}/code/cpp/build/digitalEuropeanOptionUnit" },
       { "name": "Engine: Close Form", "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit" },
       { "name": "Common: Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
-  ],
+      { "name": "Engine: Chooser Engine", "pattern": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration" },
+      { "name": "Product: Chooser European Option", "pattern": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit" },
+  
+    ],
    "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,

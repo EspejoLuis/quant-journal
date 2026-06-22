@@ -70,6 +70,41 @@ double BsCloseForm::price(
     return sign * payoutFactor * normalCdf(dFactor);
 }
 
+double BsCloseForm::price(
+    const ChooserEuropeanOption& chooserEuropeanOption) const {
+
+    const double K = chooserEuropeanOption.parameters().strike;
+    const OptionDirection direction =
+        chooserEuropeanOption.parameters().direction;
+
+    VanillaEuropeanOption call =
+        VanillaEuropeanOption{OptionParameters{K, OptionType::Call, direction}};
+
+    ModelParameters callParams = modelParams_;
+
+    const double T = chooserEuropeanOption.parameters().maturity;
+    callParams.timeHorizonInYears = T;
+
+    const double callPrice = BsCloseForm{callParams}.price(call);
+
+    const double T_c = modelParams_.timeHorizonInYears;
+    const double KDiscounted =
+        K * std::exp(-(modelParams_.interestRate - modelParams_.dividendRate) *
+                     (T - T_c));
+    const double discountingFactor =
+        std::exp(-modelParams_.dividendRate * (T - T_c));
+
+    ModelParameters putParams = modelParams_;
+    putParams.timeHorizonInYears = T_c;
+
+    VanillaEuropeanOption put = VanillaEuropeanOption{
+        OptionParameters{KDiscounted, OptionType::Put, direction}};
+
+    const double putPrice = BsCloseForm{putParams}.price(put);
+
+    return callPrice + putPrice * discountingFactor;
+}
+
 void BsCloseForm::validateInputs() const {
 
     if (modelParams_.underlyingPrice < 0.0)

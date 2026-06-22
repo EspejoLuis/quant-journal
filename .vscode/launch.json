@@ -40,6 +40,22 @@
             "program": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit",
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug chooserEuropeanOptionUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },        {
+            "name": "Debug chooserEngineIntegration",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration",
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
+
     ]
 }
