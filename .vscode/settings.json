@@ -4,7 +4,6 @@
   // the whole workspace) and causes Cmd+click to create a new file in the current folder
   // instead of opening the existing note. It also produces a double hover preview.
   "markdown-preview-enhanced.enableWikiLinkSyntax": false,
-
   // Fallback style for when VS Code restores a previously open graph panel across sessions
   // (deserializeWebviewPanel path). That path skips foam.graph.views entirely and reads only
   // this setting, so without it the graph defaults to coloring by type.
@@ -17,15 +16,26 @@
       "name": "Default",
       "colorBy": "directory",
       "show": {
-        "tag": { "enabled": true },
-        "attachment": { "enabled": false },
-        "image": { "enabled": false },
-        "placeholder": { "enabled": true }
+        "tag": {
+          "enabled": true
+        },
+        "attachment": {
+          "enabled": false
+        },
+        "image": {
+          "enabled": false
+        },
+        "placeholder": {
+          "enabled": true
+        }
       }
     }
   ],
   "editor.formatOnSave": true,
   "C_Cpp.formatting": "clangFormat",
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
   "cmake.configureOnOpen": false,
   "cmake.sourceDirectory": "${workspaceFolder}/code/cpp",
   "cmake.buildDirectory": "${workspaceFolder}/code/cpp/build",
@@ -33,25 +43,56 @@
   "cmake.buildBeforeRun": true,
   "cmake.ctest.testExplorerIntegrationEnabled": false,
   "testMate.cpp.test.advancedExecutables": [
-      { "name": "Engine: Monte Carlo", "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit" },
-      { "name": "Product: Vanilla European Option", "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit" },
-      { "name": "Product: Digital European Option", "pattern": "${workspaceFolder}/code/cpp/build/digitalEuropeanOptionUnit" },
-      { "name": "Engine: Close Form", "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit" },
-      { "name": "Common: Math Functions", "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit" },
-      { "name": "Engine: Chooser Engine", "pattern": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration" },
-      { "name": "Product: Chooser European Option", "pattern": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit" },
-      { "name": "Product: Instrument", "pattern": "${workspaceFolder}/code/cpp/build/instrumentUnit" },
-  
-    ],
-   "[markdown]": {
+    {
+      "name": "Engine: Monte Carlo",
+      "pattern": "${workspaceFolder}/code/cpp/build/monteCarloEngineUnit"
+    },
+    {
+      "name": "Product: Vanilla European Option",
+      "pattern": "${workspaceFolder}/code/cpp/build/vanillaEuropeanOptionUnit"
+    },
+    {
+      "name": "Product: Digital European Option",
+      "pattern": "${workspaceFolder}/code/cpp/build/digitalEuropeanOptionUnit"
+    },
+    {
+      "name": "Engine: Close Form",
+      "pattern": "${workspaceFolder}/code/cpp/build/blackScholesCloseFormUnit"
+    },
+    {
+      "name": "Common: Math Functions",
+      "pattern": "${workspaceFolder}/code/cpp/build/mathFunctionsUnit"
+    },
+    {
+      "name": "Engine: Chooser Engine",
+      "pattern": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration"
+    },
+    {
+      "name": "Product: Chooser European Option",
+      "pattern": "${workspaceFolder}/code/cpp/build/chooserEuropeanOptionUnit"
+    },
+    {
+      "name": "Product: Instrument",
+      "pattern": "${workspaceFolder}/code/cpp/build/instrumentUnit"
+    },
+  ],
+  "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true
   },
-
   "VsCodeTaskButtons.tasks": [
-    { "label": "$(tools) Build Lib", "task": "Build Library" },
-    { "label": "$(beaker) Build Tests", "task": "Build Tests" },
-    { "label": "$(graph) Coverage", "task": "Run Coverage" }
+    {
+      "label": "$(tools) Build Lib",
+      "task": "Build Library"
+    },
+    {
+      "label": "$(beaker) Build Tests",
+      "task": "Build Tests"
+    },
+    {
+      "label": "$(graph) Coverage",
+      "task": "Run Coverage"
+    }
   ],
 }

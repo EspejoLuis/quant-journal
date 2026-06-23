@@ -65,6 +65,5 @@
             "args": [],
             "cwd": "${workspaceFolder}"
         }
-
     ]
 }

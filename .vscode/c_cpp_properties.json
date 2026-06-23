@@ -2,9 +2,14 @@
   "configurations": [
     {
       "name": "Mac",
-      "includePath": ["${workspaceFolder}/**", "/opt/homebrew/include"],
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/opt/homebrew/include"
+      ],
       "cppStandard": "c++23",
-      "macFrameworkPath": ["/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"],
+      "macFrameworkPath": [
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+      ],
       "compilerPath": "/usr/bin/g++"
     }
   ],
