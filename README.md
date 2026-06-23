@@ -31,9 +31,9 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | — | — | Planned |
-| **Finite Differences** | 1D Forward Euler (BS PDE) | — | — | — | Planned |
-| | 1D Backward Euler (BS PDE) | — | — | — | Planned |
-| | 1D Crank-Nicolson (BS PDE) | — | — | — | Planned |
+| **Finite Differences** | 1D Explicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
+| | 1D Implicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
+| | 1D Crank-Nicolson (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
 | | 2D Crank-Nicolson (Lookback, S×M grid) | — | — | — | Planned |
 | | 2D Craig-Sneyd ADI (Heston/SLV, S×v grid) | — | — | — | Planned |
 | **AAD** | Greeks via reverse-mode automatic differentiation | — | — | — | Planned |

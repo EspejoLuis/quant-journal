@@ -169,14 +169,15 @@ code/cpp/src/
 │   ├── optionParameters.hpp     ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
 │   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf (header-only inline)
 │   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
-│   └── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
+│   ├── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
+│   └── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct
 ├── engine/
 │   ├── engine.hpp               ← abstract base: virtual double price(const Instrument&) = 0
 │   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters
 │   ├── monteCarloEngine.cpp     ← McEngine::price(), validateGbmInputs(); calls simulateGbmPath() from pathGeneration.hpp
 │   ├── blackScholesCloseForm.hpp/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.hpp
 │   ├── chooserEngine.hpp/cpp    ← ChooserEngine; does NOT derive Engine; price(const ChooserEuropeanOption&); simulates to T_c via simulateGbmPath(), BS sub-prices per path, discounts by e^{-rT_c}
-│   └── pdePricingEngine.hpp/cpp ← derives Engine; 1D Forward Euler / Backward Euler / CN / 2D ADI (planned)
+│   └── pdeEngine.hpp/cpp        ← PdeEngine derives Engine; stores ModelParameters + PdeParameters; 1D Explicit/Implicit/CN schemes; S_max from GBM 3-sigma; 2D ADI (planned)
 └── product/
     ├── instrument.hpp              ← non-pure-virtual base: payoff(path) default throws; products that can express payoff as f(path) override it; others (Chooser, Cliquet) derive but do not override
     ├── vanillaEuropeanOption.hpp/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
@@ -211,7 +212,7 @@ code/cpp/src/
 
 **Variance reduction techniques to integrate:** antithetic variates, control variates, importance sampling.
 
-**PDE solvers** (in `pdePricingEngine`):
+**PDE solvers** (in `pdeEngine`):
 
 - 1D Forward Euler — explicit, no system to solve, conditionally stable (CFL condition Δt ≤ Δx²/2); implement first to see stability failure
 - 1D Backward Euler — implicit, unconditionally stable, first-order in time; same Thomas algorithm tridiagonal solve as CN
