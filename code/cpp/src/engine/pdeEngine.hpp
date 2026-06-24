@@ -2,6 +2,7 @@
 #include "engine.hpp"
 #include "modelParameters.hpp"
 #include "pdeParameters.hpp"
+#include <vector>
 
 class PdeEngine : public Engine {
 
@@ -14,6 +15,11 @@ class PdeEngine : public Engine {
   private:
     const ModelParameters modelParams_;
     const PdeParameters pdeParams_;
+
+    std::vector<double> defineSpaceGrid() const;
+
+    PdeCoefficients computeCoefficients(
+        const std::vector<double>& spaceGrid) const;
 
     void validateInputs() const;
 };
