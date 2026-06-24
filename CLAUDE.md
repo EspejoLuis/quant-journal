@@ -167,10 +167,10 @@ code/cpp/src/
 ├── common/
 │   ├── modelParameters.hpp      ← ModelParameters struct (shared by engine + product)
 │   ├── optionParameters.hpp     ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
-│   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf (header-only inline)
+│   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf, interpolationLinear (header-only inline)
 │   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
 │   ├── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
-│   └── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct
+│   └── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct, PdeCoefficients struct {a,b,c}
 ├── engine/
 │   ├── engine.hpp               ← abstract base: virtual double price(const Instrument&) = 0
 │   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters
@@ -214,8 +214,8 @@ code/cpp/src/
 
 **PDE solvers** (in `pdeEngine`):
 
-- 1D Forward Euler — explicit, no system to solve, conditionally stable (CFL condition Δt ≤ Δx²/2); implement first to see stability failure
-- 1D Backward Euler — implicit, unconditionally stable, first-order in time; same Thomas algorithm tridiagonal solve as CN
+- 1D Explicit scheme — no system to solve, conditionally stable (CFL condition Δt ≤ ΔS²/(σ²S_max²)); implement first to see stability failure
+- 1D Implicit scheme — unconditionally stable, first-order in time; Thomas algorithm tridiagonal solve
 - 1D Crank-Nicolson — implicit, second-order in time and space, standard choice; Thomas algorithm tridiagonal solve
 - 2D Craig-Sneyd ADI for the Heston/SLV PDE in (S,v)
 
@@ -229,10 +229,10 @@ The plan is incremental: each block extends the engine by one capability, then i
 
 | # | Product | Block | Needs | MC pricing | Status |
 | - | ------- | ----- | ----- | ---------- | ------ |
-| — | Engine seed (GBM + 1D CN) | A | — | — | [ ] |
-| 1 | Digital Option (European) | A | GBM | European only | [ ] |
+| — | Engine seed (GBM + 1D CN) | A | — | — | [~] |
+| 1 | Digital Option (European) | A | GBM | European only | [x] |
 | 1b | Digital Option (American) | A+LSM | GBM + LSM | LSM primary | [ ] |
-| 2 | Chooser Option | A | GBM | European only | [ ] |
+| 2 | Chooser Option | A | GBM | European only | [x] |
 | 3 | Asian Option | A | GBM + path avg | European + LSM (American Asian) | [ ] |
 | 4 | Barrier Option | A | GBM + barrier check | European + LSM (American barrier) | [ ] |
 | 5 | Lookback Option | A | GBM + running max/min | European + LSM (American lookback) | [ ] |
@@ -267,7 +267,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 Build the minimum viable engine — one path generator, one PDE solver, one product.
 
 - `mc_engine.h`: `simulateGbmPath(S0, r, sigma, T, N)` returning daily prices. Price a vanilla European call by averaging `max(S_T - K, 0)` over many paths.
-- `pde_engine.h`: 1D PDE solver with three schemes — Forward Euler (explicit, observe stability failure), Backward Euler (implicit, first-order), Crank-Nicolson (implicit, second-order). Solve the BS PDE backward in time from the call payoff at maturity.
+- `pde_engine.h`: 1D PDE solver with three schemes — Explicit (conditionally stable, observe CFL failure), Implicit (first-order, unconditionally stable), Crank-Nicolson (second-order, unconditionally stable). Solve the BS PDE backward in time from the call payoff at maturity.
 - Verify both against BS closed-form. If both agree to < 0.5%, the engines are correct.
 
 **RNG this week:** `std::mt19937` seeded with `std::random_device`. Understand why the seed matters for reproducibility.

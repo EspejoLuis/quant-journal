@@ -71,3 +71,4 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 - [Black-Scholes Formula](notes/random-notes/black-scholes-formula.md)
 - [Digital Option (European)](notes/products/digital-option.md)
 - [Chooser Option](notes/products/chooser-option.md)
+- [PDE Engine](notes/engines/pde-engine.md)
