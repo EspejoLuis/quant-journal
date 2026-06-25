@@ -41,7 +41,7 @@ Coefficients $a_i$, $b_i$, $c_i$ differ between uniform ($S$-space) and log ($x$
 ### Schemes (backward in time: know $V^{n+1}$, want $V^n$)
 
 | Scheme | Formula | System to solve | Stable? |
-|--------|---------|----------------|---------|
+| ------ | ------- | -------------- | ------- |
 | Explicit | $V^n = (I + \Delta t\, L)\, V^{n+1}$ | None — direct update | Conditionally (see CFL section) |
 | Implicit | $(I - \Delta t\, L)\, V^n = V^{n+1}$ | Tridiagonal (Thomas) | Unconditionally |
 | Crank-Nicolson | $(I - \frac{\Delta t}{2} L)\, V^n = (I + \frac{\Delta t}{2} L)\, V^{n+1}$ | Tridiagonal (Thomas) | Unconditionally, 2nd order |
