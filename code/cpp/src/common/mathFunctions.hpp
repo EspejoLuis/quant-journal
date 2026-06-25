@@ -9,7 +9,7 @@ inline double mean(const std::vector<double>& v) {
 };
 
 inline double sampleVariance(const std::vector<double>& v) {
-    double m = mean(v);
+    double m{mean(v)};
     return std::accumulate(
                v.begin(), v.end(), 0.0,
                [m](double acc, double x) { return acc + (x - m) * (x - m); }) /

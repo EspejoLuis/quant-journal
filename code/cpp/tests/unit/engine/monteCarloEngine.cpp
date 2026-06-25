@@ -191,8 +191,8 @@ TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
         VanillaEuropeanOption{optionParamsCall};
 
     const int runs = 30;
-    std::vector<double> mcPrices = std::vector<double>(runs);
-    std::vector<double> mcPricesVarianceReduction = std::vector<double>(runs);
+    std::vector<double> mcPrices(runs);
+    std::vector<double> mcPricesVarianceReduction(runs);
 
     for (int i = 0; i < runs; i++) {
         mcPrices[i] = mcEng.price(vanillaOption);

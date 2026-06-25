@@ -173,19 +173,19 @@ void PdeEngine::computeCoefficients() {
     switch (pdeParams_.grid) {
     case PdeGrid::Uniform: {
 
-        const double factor1 =
+        const double factor1{
             (modelParams_.volatility * modelParams_.volatility) /
-            ((grid_.spaceDelta) * (grid_.spaceDelta));
+            ((grid_.spaceDelta) * (grid_.spaceDelta))};
 
-        const double factor2 =
+        const double factor2{
             (modelParams_.interestRate - modelParams_.dividendRate) /
-            (2.0 * (grid_.spaceDelta));
+            (2.0 * (grid_.spaceDelta))};
 
         for (size_t i = 0; i < grid_.spaceGrid.size(); i++) {
 
-            const double diffusionTerm =
-                (0.5 * factor1 * (grid_.spaceGrid[i] * grid_.spaceGrid[i]));
-            const double driftTerm = grid_.spaceGrid[i] * factor2;
+            const double diffusionTerm{
+                0.5 * factor1 * (grid_.spaceGrid[i] * grid_.spaceGrid[i])};
+            const double driftTerm{grid_.spaceGrid[i] * factor2};
 
             a[i] = diffusionTerm - driftTerm;
             b[i] = -2 * diffusionTerm - modelParams_.interestRate;
@@ -195,14 +195,14 @@ void PdeEngine::computeCoefficients() {
     }
     case PdeGrid::Log: {
 
-        const double diffusionTerm =
+        const double diffusionTerm{
             0.5 * (modelParams_.volatility * modelParams_.volatility) /
-            ((grid_.spaceDelta) * (grid_.spaceDelta));
+            ((grid_.spaceDelta) * (grid_.spaceDelta))};
 
-        const double driftTerm =
+        const double driftTerm{
             (modelParams_.interestRate - modelParams_.dividendRate -
              modelParams_.volatility * modelParams_.volatility * 0.5) /
-            (2.0 * (grid_.spaceDelta));
+            (2.0 * (grid_.spaceDelta))};
 
         std::fill(a.begin(), a.end(), diffusionTerm - driftTerm);
         std::fill(b.begin(), b.end(),
