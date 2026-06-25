@@ -2,7 +2,7 @@
 type: note
 category: engine
 tags: [pde, finite-difference, black-scholes, explicit, implicit, crank-nicolson]
-related: [black-scholes-formula, vanilla-european-option]
+related: [black-scholes-formula, vanilla-european-option, pde-fd-coefficients]
 status: in-progress
 ---
 
@@ -34,23 +34,49 @@ The $-\tfrac{1}{2}\sigma^2$ is the Itô correction converting the log-process ba
 
 ### Discretisation operator $L$
 
-Second-order central differences on the uniform grid:
-
-$$a_i = \frac{\sigma^2 S_i^2}{2(\Delta S)^2} - \frac{(r-q) S_i}{2 \Delta S}$$
-
-$$b_i = -\frac{\sigma^2 S_i^2}{(\Delta S)^2} - r$$
-
-$$c_i = \frac{\sigma^2 S_i^2}{2(\Delta S)^2} + \frac{(r-q) S_i}{2 \Delta S}$$
-
 $(LV)_i = a_i V_{i-1} + b_i V_i + c_i V_{i+1}$
+
+Coefficients $a_i$, $b_i$, $c_i$ differ between uniform ($S$-space) and log ($x$-space) grids — see [[pde-fd-coefficients]].
 
 ### Schemes (backward in time: know $V^{n+1}$, want $V^n$)
 
 | Scheme | Formula | System to solve | Stable? |
 |--------|---------|----------------|---------|
-| Explicit | $V^n = (I + \Delta t\, L)\, V^{n+1}$ | None — direct update | Conditionally: $\Delta t \leq (\Delta S)^2 / 2$ |
+| Explicit | $V^n = (I + \Delta t\, L)\, V^{n+1}$ | None — direct update | Conditionally (see CFL section) |
 | Implicit | $(I - \Delta t\, L)\, V^n = V^{n+1}$ | Tridiagonal (Thomas) | Unconditionally |
 | Crank-Nicolson | $(I - \frac{\Delta t}{2} L)\, V^n = (I + \frac{\Delta t}{2} L)\, V^{n+1}$ | Tridiagonal (Thomas) | Unconditionally, 2nd order |
+
+### CFL Condition (Explicit Scheme)
+
+**Uniform grid derivation:**
+
+The explicit update at interior node $i$:
+
+$$V_i^n = V_i^{n+1} + \Delta t \left( a_i V_{i-1}^{n+1} + b_i V_i^{n+1} + c_i V_{i+1}^{n+1} \right)$$
+
+For stability, the coefficient of $V_i^{n+1}$ must be non-negative (otherwise the scheme amplifies errors). Dropping the small $-r$ term from $b_i$:
+
+$$1 + b_i \Delta t \geq 0 \implies 1 - \frac{\sigma^2 S_i^2}{(\Delta S)^2}\,\Delta t \geq 0$$
+
+The diffusion coefficient $D_i = \tfrac{1}{2}\sigma^2 S_i^2$ is largest at $i = N$ (i.e. $S_i = S_{\max}$), so the tightest constraint comes from that node:
+
+$$\boxed{\Delta t \leq \frac{(\Delta S)^2}{\sigma^2 S_{\max}^2}}$$
+
+**Why $S_{\max}^2$ appears:** the BS diffusion coefficient is $\tfrac{1}{2}\sigma^2 S^2$, not a constant. The S-space step $\Delta S$ is the same at every node, but the "speed" at which information spreads grows as $S^2$. The node at $S_{\max}$ runs the fastest — it sets the global constraint.
+
+**Log grid:**
+
+Under $x = \log S$, the BS PDE transforms to:
+
+$$\frac{\partial V}{\partial t} + \frac{\sigma^2}{2}\frac{\partial^2 V}{\partial x^2} + \left(r - q - \frac{\sigma^2}{2}\right)\frac{\partial V}{\partial x} - rV = 0$$
+
+The $S^2$ factor is absorbed into the change of variables. The diffusion coefficient is now the constant $D = \sigma^2/2$. With uniform log-space step $\Delta x = (\log S_{\max} - \log S_{\min})/N$:
+
+$$\Delta t \leq \frac{(\Delta x)^2}{\sigma^2}$$
+
+No $S_{\max}^2$ — the constraint is the same at every node. For large $S_{\max}$, $\Delta x \sim \log S_{\max}/N$ grows only logarithmically, so the log-grid CFL is far less restrictive than the uniform-grid one.
+
+**Implementation note:** the CFL check must use the grid-appropriate formula. For a log grid the coefficients $a_i, b_i, c_i$ must also be rederived in $x$-space (constant-coefficient PDE); using the $S$-space coefficients with non-uniform $\Delta S_i$ is incorrect.
 
 ### Boundary conditions
 
