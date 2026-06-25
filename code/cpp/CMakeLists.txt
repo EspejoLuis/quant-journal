@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.10)
 project(quantJournal)
 include(CTest)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 # Set the C++ standard to use (C++17 here)
 set(CMAKE_CXX_STANDARD 23)
 
