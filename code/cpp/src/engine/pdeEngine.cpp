@@ -1,5 +1,6 @@
 #include "pdeEngine.hpp"
 #include "mathFunctions.hpp"
+#include "vectorUtils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -56,11 +57,8 @@ double PdeEngine::explicitMethod(std::vector<double> valuesCurrent,
         std::swap(valuesCurrent, valuesNext);
     }
 
-    std::vector<double>::const_iterator it =
-        std::lower_bound(grid_.spaceGrid.begin(), grid_.spaceGrid.end(),
-                         modelParams_.underlyingPrice);
-
-    const ptrdiff_t idx = std::distance(grid_.spaceGrid.begin(), it);
+    const ptrdiff_t idx =
+        findClosestIndex(grid_.spaceGrid, modelParams_.underlyingPrice);
 
     return interpolationLinear(modelParams_.underlyingPrice,
                                grid_.spaceGrid[idx - 1], grid_.spaceGrid[idx],
@@ -168,29 +166,53 @@ void PdeEngine::defineGrid() {
 
 void PdeEngine::computeCoefficients() {
 
-    const double factor1 = (modelParams_.volatility * modelParams_.volatility) /
-                           ((grid_.spaceDelta) * (grid_.spaceDelta));
-
-    const double factor2 =
-        (modelParams_.interestRate - modelParams_.dividendRate) /
-        (2.0 * (grid_.spaceDelta));
-
     std::vector<double> a(grid_.spaceGrid.size());
     std::vector<double> b(grid_.spaceGrid.size());
     std::vector<double> c(grid_.spaceGrid.size());
 
-    for (size_t i = 0; i < grid_.spaceGrid.size(); i++) {
+    switch (pdeParams_.grid) {
+    case PdeGrid::Uniform: {
+
+        const double factor1 =
+            (modelParams_.volatility * modelParams_.volatility) /
+            ((grid_.spaceDelta) * (grid_.spaceDelta));
+
+        const double factor2 =
+            (modelParams_.interestRate - modelParams_.dividendRate) /
+            (2.0 * (grid_.spaceDelta));
+
+        for (size_t i = 0; i < grid_.spaceGrid.size(); i++) {
+
+            const double diffusionTerm =
+                (0.5 * factor1 * (grid_.spaceGrid[i] * grid_.spaceGrid[i]));
+            const double driftTerm = grid_.spaceGrid[i] * factor2;
+
+            a[i] = diffusionTerm - driftTerm;
+            b[i] = -2 * diffusionTerm - modelParams_.interestRate;
+            c[i] = diffusionTerm + driftTerm;
+        }
+        break;
+    }
+    case PdeGrid::Log: {
 
         const double diffusionTerm =
-            (0.5 * factor1 * (grid_.spaceGrid[i] * grid_.spaceGrid[i]));
-        const double driftTerm = grid_.spaceGrid[i] * factor2;
+            0.5 * (modelParams_.volatility * modelParams_.volatility) /
+            ((grid_.spaceDelta) * (grid_.spaceDelta));
 
-        a[i] = diffusionTerm - driftTerm;
-        b[i] = -2 * diffusionTerm - modelParams_.interestRate;
-        c[i] = diffusionTerm + driftTerm;
+        const double driftTerm =
+            (modelParams_.interestRate - modelParams_.dividendRate -
+             modelParams_.volatility * modelParams_.volatility * 0.5) /
+            (2.0 * (grid_.spaceDelta));
+
+        std::fill(a.begin(), a.end(), diffusionTerm - driftTerm);
+        std::fill(b.begin(), b.end(),
+                  -2 * diffusionTerm - modelParams_.interestRate);
+        std::fill(c.begin(), c.end(), diffusionTerm + driftTerm);
+        break;
+    }
     }
 
-    pdeCoeffs_.a = a;
-    pdeCoeffs_.b = b;
-    pdeCoeffs_.c = c;
-};
+    pdeCoeffs_.a = std::move(a);
+    pdeCoeffs_.b = std::move(b);
+    pdeCoeffs_.c = std::move(c);
+}
