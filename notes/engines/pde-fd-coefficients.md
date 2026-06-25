@@ -63,7 +63,7 @@ $$c_i = \frac{\sigma^2}{2(\Delta x)^2} + \frac{r - q - \frac{\sigma^2}{2}}{2\Del
 ## Comparison
 
 | | Uniform ($S$-space) | Log ($x$-space) |
-|-|---------------------|-----------------|
+| - | ------------------- | --------------- |
 | Coefficients | Vary with $S_i^2$, $S_i$ | Constant across all nodes |
 | `diffusionTerm` (FD) | $\dfrac{\sigma^2 S_i^2}{2(\Delta S)^2}$ | $\dfrac{\sigma^2}{2(\Delta x)^2}$ |
 | `driftTerm` (FD) | $\dfrac{(r-q)\,S_i}{2\,\Delta S}$ | $\dfrac{r - q - \frac{\sigma^2}{2}}{2\,\Delta x}$ |

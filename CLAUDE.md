@@ -170,7 +170,8 @@ code/cpp/src/
 │   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf, interpolationLinear (header-only inline)
 │   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
 │   ├── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
-│   └── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct, PdeCoefficients struct {a,b,c}
+│   ├── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct, PdeCoefficients struct {a,b,c}, PdeGridParameters struct {spaceGrid,spaceMin,spaceMax,spaceDelta,timeDelta}
+│   └── vectorUtils.hpp          ← findClosestIndex(v, target) — lower_bound + distance, ptrdiff_t return; throws out_of_range if target outside grid
 ├── engine/
 │   ├── engine.hpp               ← abstract base: virtual double price(const Instrument&) = 0
 │   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters
@@ -197,6 +198,7 @@ code/cpp/src/
 - Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines (e.g. `ChooserEngine`) — same pattern as `BsCloseForm` not deriving `Engine`
 - `ChooserEngine`: `ModelParameters.timeHorizonInYears` = T_c (simulation horizon); `ChooserOptionParameters.maturity` = T (full expiry); simulates to T_c, constructs `ModelParameters` copy per path with `underlyingPrice = S_{T_c}` and `timeHorizonInYears = T - T_c`, discounts by e^{-r*T_c}
 - `BsCloseForm` does NOT derive `Engine` — analytic engines need instrument-specific parameters (strike, type) that are not on the `Instrument` interface; forcing them through would require `dynamic_cast`
+- `PdeEngine` computes `grid_` (PdeGridParameters) and `pdeCoeffs_` (PdeCoefficients) in the constructor, not in `price()` — grid and coefficients are fixed for the lifetime of the engine; `price()` is effectively read-only and thread-safe without locks (CP.1 extended to PDE engines)
 - `simulateGbmPath` and `createRng` are free inline functions in `common/pathGeneration.hpp` — stateless (CP.1), reusable by any engine, tested through `McEngine::price()` and `ChooserEngine::price()`
 
 **`monteCarloEngine` grows one function per block:**

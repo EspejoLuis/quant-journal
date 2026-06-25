@@ -72,3 +72,4 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 - [Digital Option (European)](notes/products/digital-option.md)
 - [Chooser Option](notes/products/chooser-option.md)
 - [PDE Engine](notes/engines/pde-engine.md)
+- [PDE Finite-Difference Coefficients](notes/engines/pde-fd-coefficients.md)
