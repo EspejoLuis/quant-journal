@@ -17,3 +17,12 @@ struct PdeCoefficients {
     std::vector<double> b;
     std::vector<double> c;
 };
+
+struct PdeGridParameters {
+
+    std::vector<double> spaceGrid;
+    double spaceMin;
+    double spaceMax;
+    double spaceDelta;
+    double timeDelta;
+};

@@ -7,52 +7,26 @@
 PdeEngine::PdeEngine(const ModelParameters& modelParams,
                      const PdeParameters& pdeParams)
     : modelParams_(modelParams), pdeParams_(pdeParams) {
+
     validateInputs();
+    defineGrid();
+    computeCoefficients();
 };
 
 double PdeEngine::price(const Instrument& instrument) {
 
-    const std::vector<double> spaceGrid = defineSpaceGrid();
-
     std::vector<double> valuesCurrent(pdeParams_.nSpaceSteps + 1);
 
     for (int i = 0; i <= pdeParams_.nSpaceSteps; i++)
-        valuesCurrent[i] = instrument.payoff({spaceGrid[i]});
+        valuesCurrent[i] = instrument.payoff({grid_.spaceGrid[i]});
 
     std::vector<double> valuesNext(pdeParams_.nSpaceSteps + 1);
-
-    PdeCoefficients pdeCoeffs = computeCoefficients(spaceGrid);
-
-    const double dt = modelParams_.timeHorizonInYears / pdeParams_.nTimeSteps;
 
     switch (pdeParams_.scheme) {
     case PdeScheme::Explicit: {
 
-        // cfl
-
-        for (int t = pdeParams_.nTimeSteps; t > 0; t--) {
-            for (int i = 1; i < pdeParams_.nSpaceSteps; i++) {
-                valuesNext[i] = valuesCurrent[i] +
-                                dt * (pdeCoeffs.a[i] * valuesCurrent[i - 1] +
-                                      pdeCoeffs.b[i] * valuesCurrent[i] +
-                                      pdeCoeffs.c[i] * valuesCurrent[i + 1]);
-            }
-
-            valuesNext.front() = 0;
-            valuesNext.back() = 2 * valuesNext[valuesNext.size() - 2] -
-                                valuesNext[valuesNext.size() - 3];
-
-            std::swap(valuesCurrent, valuesNext);
-        }
-
-        std::vector<double>::const_iterator it = std::lower_bound(
-            spaceGrid.begin(), spaceGrid.end(), modelParams_.underlyingPrice);
-
-        const ptrdiff_t idx = std::distance(spaceGrid.begin(), it);
-
-        return interpolationLinear(modelParams_.underlyingPrice,
-                                   spaceGrid[idx - 1], spaceGrid[idx],
-                                   valuesCurrent[idx - 1], valuesCurrent[idx]);
+        cflCondition();
+        return explicitMethod(valuesCurrent, valuesNext);
     }
     case PdeScheme::Implicit: {
         return 0.0;
@@ -62,6 +36,36 @@ double PdeEngine::price(const Instrument& instrument) {
     }
     };
 };
+
+double PdeEngine::explicitMethod(std::vector<double> valuesCurrent,
+                                 std::vector<double> valuesNext) const {
+
+    for (int t = pdeParams_.nTimeSteps; t > 0; t--) {
+        for (int i = 1; i < pdeParams_.nSpaceSteps; i++) {
+            valuesNext[i] =
+                valuesCurrent[i] +
+                grid_.timeDelta * (pdeCoeffs_.a[i] * valuesCurrent[i - 1] +
+                                   pdeCoeffs_.b[i] * valuesCurrent[i] +
+                                   pdeCoeffs_.c[i] * valuesCurrent[i + 1]);
+        }
+
+        valuesNext.front() = 0;
+        valuesNext.back() = 2 * valuesNext[valuesNext.size() - 2] -
+                            valuesNext[valuesNext.size() - 3];
+
+        std::swap(valuesCurrent, valuesNext);
+    }
+
+    std::vector<double>::const_iterator it =
+        std::lower_bound(grid_.spaceGrid.begin(), grid_.spaceGrid.end(),
+                         modelParams_.underlyingPrice);
+
+    const ptrdiff_t idx = std::distance(grid_.spaceGrid.begin(), it);
+
+    return interpolationLinear(modelParams_.underlyingPrice,
+                               grid_.spaceGrid[idx - 1], grid_.spaceGrid[idx],
+                               valuesCurrent[idx - 1], valuesCurrent[idx]);
+}
 
 void PdeEngine::validateInputs() const {
 
@@ -92,9 +96,28 @@ void PdeEngine::validateInputs() const {
         throw std::invalid_argument("invalid PdeScheme");
 };
 
-std::vector<double> PdeEngine::defineSpaceGrid() const {
+void PdeEngine::cflCondition() const {
+    switch (pdeParams_.grid) {
 
-    std::vector<double> spaceGrid(pdeParams_.nSpaceSteps + 1);
+    case PdeGrid::Uniform: {
+        if (grid_.timeDelta >
+            grid_.spaceDelta * grid_.spaceDelta /
+                (modelParams_.volatility * modelParams_.volatility *
+                 grid_.spaceMax * grid_.spaceMax))
+            throw std::invalid_argument("CFL condition not satisfied");
+        break;
+    }
+    case PdeGrid::Log: {
+        if (grid_.timeDelta >
+            grid_.spaceDelta * grid_.spaceDelta /
+                (modelParams_.volatility * modelParams_.volatility))
+            throw std::invalid_argument("CFL condition not satisfied");
+        break;
+    }
+    };
+}
+
+void PdeEngine::defineGrid() {
 
     const double sMax{
         modelParams_.underlyingPrice *
@@ -103,6 +126,8 @@ std::vector<double> PdeEngine::defineSpaceGrid() const {
                      modelParams_.timeHorizonInYears +
                  modelParams_.volatility *
                      std::sqrt(modelParams_.timeHorizonInYears) * 3.0)};
+
+    std::vector<double> spaceGrid(pdeParams_.nSpaceSteps + 1);
 
     switch (pdeParams_.grid) {
     case PdeGrid::Uniform: {
@@ -113,7 +138,12 @@ std::vector<double> PdeEngine::defineSpaceGrid() const {
         for (int i = 0; i <= pdeParams_.nSpaceSteps; i++)
             spaceGrid[i] = sMin + ds * i;
 
-        return spaceGrid;
+        grid_.spaceMax = sMax;
+        grid_.spaceMin = sMin;
+        grid_.spaceDelta = ds;
+        grid_.spaceGrid = spaceGrid;
+
+        break;
     }
     case PdeGrid::Log: {
 
@@ -125,36 +155,42 @@ std::vector<double> PdeEngine::defineSpaceGrid() const {
         for (int i = 0; i <= pdeParams_.nSpaceSteps; i++)
             spaceGrid[i] = std::exp(logSMin + logDs * i);
 
-        return spaceGrid;
+        grid_.spaceMax = logSMax;
+        grid_.spaceMin = logSMin;
+        grid_.spaceDelta = logDs;
+        grid_.spaceGrid = spaceGrid;
+
+        break;
     }
     };
+    grid_.timeDelta = modelParams_.timeHorizonInYears / pdeParams_.nTimeSteps;
 }
 
-PdeCoefficients PdeEngine::computeCoefficients(
-    const std::vector<double>& spaceGrid) const {
+void PdeEngine::computeCoefficients() {
 
-    const double factor1 =
-        (modelParams_.volatility * modelParams_.volatility) /
-        ((spaceGrid[1] - spaceGrid[0]) * (spaceGrid[1] - spaceGrid[0]));
+    const double factor1 = (modelParams_.volatility * modelParams_.volatility) /
+                           ((grid_.spaceDelta) * (grid_.spaceDelta));
 
     const double factor2 =
         (modelParams_.interestRate - modelParams_.dividendRate) /
-        (2.0 * (spaceGrid[1] - spaceGrid[0]));
+        (2.0 * (grid_.spaceDelta));
 
-    std::vector<double> a(spaceGrid.size());
-    std::vector<double> b(spaceGrid.size());
-    std::vector<double> c(spaceGrid.size());
+    std::vector<double> a(grid_.spaceGrid.size());
+    std::vector<double> b(grid_.spaceGrid.size());
+    std::vector<double> c(grid_.spaceGrid.size());
 
-    for (size_t i = 0; i < spaceGrid.size(); i++) {
+    for (size_t i = 0; i < grid_.spaceGrid.size(); i++) {
 
         const double diffusionTerm =
-            (0.5 * factor1 * (spaceGrid[i] * spaceGrid[i]));
-        const double driftTerm = spaceGrid[i] * factor2;
+            (0.5 * factor1 * (grid_.spaceGrid[i] * grid_.spaceGrid[i]));
+        const double driftTerm = grid_.spaceGrid[i] * factor2;
 
         a[i] = diffusionTerm - driftTerm;
         b[i] = -2 * diffusionTerm - modelParams_.interestRate;
         c[i] = diffusionTerm + driftTerm;
     }
 
-    return PdeCoefficients{a, b, c};
+    pdeCoeffs_.a = a;
+    pdeCoeffs_.b = b;
+    pdeCoeffs_.c = c;
 };
