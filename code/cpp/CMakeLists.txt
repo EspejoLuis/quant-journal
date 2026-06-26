@@ -21,6 +21,7 @@ set(SOURCES
     src/engine/monteCarloEngine.cpp
     src/engine/blackScholesCloseForm.cpp
     src/engine/chooserEngine.cpp
+    src/engine/pdeEngine.cpp
     src/product/vanillaEuropeanOption.cpp
     src/product/digitalEuropeanOption.cpp
     src/product/chooserEuropeanOption.cpp
@@ -47,6 +48,7 @@ add_executable(chooserEuropeanOptionUnit tests/unit/product/chooserEuropeanOptio
 add_executable(instrumentUnit tests/unit/product/instrument.cpp)
 add_executable(chooserEngineIntegration tests/integration/engine/chooserEngine.cpp)
 add_executable(mathFunctionsUnit tests/unit/common/mathFunctions.cpp)
+add_executable(pdeEngineUnit     tests/unit/engine/pdeEngine.cpp)
 
 # Add tests/unit to each executable's include path (PRIVATE = only this target
 # sees it). Needed for any shared test helpers living under tests/unit/.
@@ -60,6 +62,7 @@ target_include_directories(chooserEuropeanOptionUnit PRIVATE tests/unit)
 target_include_directories(instrumentUnit PRIVATE tests/unit)
 target_include_directories(chooserEngineIntegration PRIVATE tests/integration)
 target_include_directories(mathFunctionsUnit PRIVATE tests/unit)
+target_include_directories(pdeEngineUnit     PRIVATE tests/unit)
 
 
 # Link each test binary against:
@@ -74,6 +77,7 @@ target_link_libraries(chooserEuropeanOptionUnit quantJournal Catch2::Catch2WithM
 target_link_libraries(instrumentUnit quantJournal Catch2::Catch2WithMain)
 target_link_libraries(chooserEngineIntegration quantJournal Catch2::Catch2WithMain)
 target_link_libraries(mathFunctionsUnit quantJournal Catch2::Catch2WithMain)
+target_link_libraries(pdeEngineUnit     quantJournal Catch2::Catch2WithMain)
 
 
 # Register each binary with CTest so `ctest` (or the VS Code TestMate runner)
@@ -87,6 +91,7 @@ add_test(NAME chooserEuropeanOptionUnit COMMAND chooserEuropeanOptionUnit)
 add_test(NAME instrumentUnit COMMAND instrumentUnit)
 add_test(NAME chooserEngineIntegration COMMAND chooserEngineIntegration)
 add_test(NAME mathFunctionsUnit COMMAND mathFunctionsUnit)
+add_test(NAME pdeEngineUnit     COMMAND pdeEngineUnit)
 
 
 
@@ -119,6 +124,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_compile_options(chooserEngineIntegration        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(blackScholesCloseFormUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
     target_compile_options(mathFunctionsUnit        PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    target_compile_options(pdeEngineUnit            PRIVATE -fprofile-instr-generate -fcoverage-mapping -O0 -g)
 
     # --- 2) Add linker flags for coverage ---
     target_link_options(quantJournal           PRIVATE -fprofile-instr-generate)
@@ -130,6 +136,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     target_link_options(chooserEngineIntegration PRIVATE -fprofile-instr-generate)
     target_link_options(blackScholesCloseFormUnit PRIVATE -fprofile-instr-generate)
     target_link_options(mathFunctionsUnit PRIVATE -fprofile-instr-generate)
+    target_link_options(pdeEngineUnit     PRIVATE -fprofile-instr-generate)
 
     # Paths/patterns to ignore from reports (tests + Catch header)
     set(ignore_regex_tests ".*/tests/")
@@ -153,6 +160,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         instrument.profraw
         blackScholesCloseForm.profraw
         mathFunctions.profraw
+        pdeEngine.profraw
         merged.profdata
         COMMAND ${CMAKE_COMMAND} -E remove_directory coverage_html
 
@@ -173,6 +181,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 $<TARGET_FILE:blackScholesCloseFormUnit>
         COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=mathFunctions.profraw
                 $<TARGET_FILE:mathFunctionsUnit>
+        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=pdeEngine.profraw
+                $<TARGET_FILE:pdeEngineUnit>
 
         # Merge profiles
         COMMAND xcrun llvm-profdata merge -sparse 
@@ -184,6 +194,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         instrument.profraw
         blackScholesCloseForm.profraw
         mathFunctions.profraw
+        pdeEngine.profraw
         -o merged.profdata
 
         # Generate a terminal coverage summary report for BOTH binaries
@@ -196,6 +207,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 -object=$<TARGET_FILE:chooserEngineIntegration>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
+                -object=$<TARGET_FILE:pdeEngineUnit>
                 -instr-profile=merged.profdata
                 -ignore-filename-regex=${ignore_regex_tests}
                 -ignore-filename-regex=${ignore_regex_catch}
@@ -215,6 +227,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 -object=$<TARGET_FILE:chooserEngineIntegration>
                 -object=$<TARGET_FILE:blackScholesCloseFormUnit>
                 -object=$<TARGET_FILE:mathFunctionsUnit>
+                -object=$<TARGET_FILE:pdeEngineUnit>
                 -instr-profile=${CMAKE_BINARY_DIR}/merged.profdata
                 -format=html
                 -output-dir=${CMAKE_BINARY_DIR}/coverage_html
@@ -241,6 +254,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
                 chooserEngineIntegration
                 blackScholesCloseFormUnit 
                 mathFunctionsUnit
+                pdeEngineUnit
 
         COMMENT "Running unit + integration with LLVM coverage and generating merged terminal + HTML reports (with branch details)"
     )

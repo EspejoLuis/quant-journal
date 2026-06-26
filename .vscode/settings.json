@@ -75,6 +75,10 @@
       "name": "Product: Instrument",
       "pattern": "${workspaceFolder}/code/cpp/build/instrumentUnit"
     },
+    {
+      "name": "Engine: PDE Engine",
+      "pattern": "${workspaceFolder}/code/cpp/build/pdeEngineUnit"
+    },
   ],
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",

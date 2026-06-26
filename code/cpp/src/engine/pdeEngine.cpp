@@ -14,57 +14,6 @@ PdeEngine::PdeEngine(const ModelParameters& modelParams,
     computeCoefficients();
 };
 
-double PdeEngine::price(const Instrument& instrument) {
-
-    std::vector<double> valuesCurrent(pdeParams_.nSpaceSteps + 1);
-
-    for (int i = 0; i <= pdeParams_.nSpaceSteps; i++)
-        valuesCurrent[i] = instrument.payoff({grid_.spaceGrid[i]});
-
-    std::vector<double> valuesNext(pdeParams_.nSpaceSteps + 1);
-
-    switch (pdeParams_.scheme) {
-    case PdeScheme::Explicit: {
-
-        cflCondition();
-        return explicitMethod(valuesCurrent, valuesNext);
-    }
-    case PdeScheme::Implicit: {
-        return 0.0;
-    }
-    case PdeScheme::CrankNicolson: {
-        return 0.0;
-    }
-    };
-};
-
-double PdeEngine::explicitMethod(std::vector<double> valuesCurrent,
-                                 std::vector<double> valuesNext) const {
-
-    for (int t = pdeParams_.nTimeSteps; t > 0; t--) {
-        for (int i = 1; i < pdeParams_.nSpaceSteps; i++) {
-            valuesNext[i] =
-                valuesCurrent[i] +
-                grid_.timeDelta * (pdeCoeffs_.a[i] * valuesCurrent[i - 1] +
-                                   pdeCoeffs_.b[i] * valuesCurrent[i] +
-                                   pdeCoeffs_.c[i] * valuesCurrent[i + 1]);
-        }
-
-        valuesNext.front() = 0;
-        valuesNext.back() = 2 * valuesNext[valuesNext.size() - 2] -
-                            valuesNext[valuesNext.size() - 3];
-
-        std::swap(valuesCurrent, valuesNext);
-    }
-
-    const ptrdiff_t idx =
-        findClosestIndex(grid_.spaceGrid, modelParams_.underlyingPrice);
-
-    return interpolationLinear(modelParams_.underlyingPrice,
-                               grid_.spaceGrid[idx - 1], grid_.spaceGrid[idx],
-                               valuesCurrent[idx - 1], valuesCurrent[idx]);
-}
-
 void PdeEngine::validateInputs() const {
 
     if (modelParams_.underlyingPrice < 0.0)
@@ -93,27 +42,6 @@ void PdeEngine::validateInputs() const {
         pdeParams_.scheme != PdeScheme::CrankNicolson)
         throw std::invalid_argument("invalid PdeScheme");
 };
-
-void PdeEngine::cflCondition() const {
-    switch (pdeParams_.grid) {
-
-    case PdeGrid::Uniform: {
-        if (grid_.timeDelta >
-            grid_.spaceDelta * grid_.spaceDelta /
-                (modelParams_.volatility * modelParams_.volatility *
-                 grid_.spaceMax * grid_.spaceMax))
-            throw std::invalid_argument("CFL condition not satisfied");
-        break;
-    }
-    case PdeGrid::Log: {
-        if (grid_.timeDelta >
-            grid_.spaceDelta * grid_.spaceDelta /
-                (modelParams_.volatility * modelParams_.volatility))
-            throw std::invalid_argument("CFL condition not satisfied");
-        break;
-    }
-    };
-}
 
 void PdeEngine::defineGrid() {
 
@@ -215,4 +143,76 @@ void PdeEngine::computeCoefficients() {
     pdeCoeffs_.a = std::move(a);
     pdeCoeffs_.b = std::move(b);
     pdeCoeffs_.c = std::move(c);
+}
+
+double PdeEngine::price(const Instrument& instrument) {
+
+    std::vector<double> valuesCurrent(pdeParams_.nSpaceSteps + 1);
+
+    for (int i = 0; i <= pdeParams_.nSpaceSteps; i++)
+        valuesCurrent[i] = instrument.payoff({grid_.spaceGrid[i]});
+
+    std::vector<double> valuesNext(pdeParams_.nSpaceSteps + 1);
+
+    switch (pdeParams_.scheme) {
+    case PdeScheme::Explicit: {
+
+        cflCondition();
+        return explicitMethod(valuesCurrent, valuesNext);
+    }
+    case PdeScheme::Implicit: {
+        return 0.0;
+    }
+    case PdeScheme::CrankNicolson: {
+        return 0.0;
+    }
+    };
+};
+
+double PdeEngine::explicitMethod(std::vector<double> valuesCurrent,
+                                 std::vector<double> valuesNext) const {
+
+    for (int t = pdeParams_.nTimeSteps; t > 0; t--) {
+        for (int i = 1; i < pdeParams_.nSpaceSteps; i++) {
+            valuesNext[i] =
+                valuesCurrent[i] +
+                grid_.timeDelta * (pdeCoeffs_.a[i] * valuesCurrent[i - 1] +
+                                   pdeCoeffs_.b[i] * valuesCurrent[i] +
+                                   pdeCoeffs_.c[i] * valuesCurrent[i + 1]);
+        }
+
+        valuesNext.front() = 0;
+        valuesNext.back() = 2 * valuesNext[valuesNext.size() - 2] -
+                            valuesNext[valuesNext.size() - 3];
+
+        std::swap(valuesCurrent, valuesNext);
+    }
+
+    const ptrdiff_t idx =
+        findClosestIndex(grid_.spaceGrid, modelParams_.underlyingPrice);
+
+    return interpolationLinear(modelParams_.underlyingPrice,
+                               grid_.spaceGrid[idx - 1], grid_.spaceGrid[idx],
+                               valuesCurrent[idx - 1], valuesCurrent[idx]);
+}
+
+void PdeEngine::cflCondition() const {
+    switch (pdeParams_.grid) {
+
+    case PdeGrid::Uniform: {
+        if (grid_.timeDelta >
+            grid_.spaceDelta * grid_.spaceDelta /
+                (modelParams_.volatility * modelParams_.volatility *
+                 grid_.spaceMax * grid_.spaceMax))
+            throw std::invalid_argument("CFL condition not satisfied");
+        break;
+    }
+    case PdeGrid::Log: {
+        if (grid_.timeDelta >
+            grid_.spaceDelta * grid_.spaceDelta /
+                (modelParams_.volatility * modelParams_.volatility))
+            throw std::invalid_argument("CFL condition not satisfied");
+        break;
+    }
+    };
 }

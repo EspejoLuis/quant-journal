@@ -64,6 +64,14 @@
             "program": "${workspaceFolder}/code/cpp/build/chooserEngineIntegration",
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug pdeEngineUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/pdeEngineUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <numeric>
+#include <stdexcept>
 #include <vector>
 
 inline double mean(const std::vector<double>& v) {
@@ -27,5 +28,8 @@ inline double normalCdf(double x) {
 
 inline double interpolationLinear(double x, double x0, double x1, double y0,
                                   double y1) {
+    if (x < x0 || x > x1)
+        throw std::out_of_range("interpolationLinear: value is out of range");
+
     return y0 + (x - x0) / (x1 - x0) * (y1 - y0);
 };

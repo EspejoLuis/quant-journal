@@ -48,3 +48,19 @@ TEST_CASE("normalCdf") {
 
     REQUIRE(expectedResults == Catch::Approx(normalCdf(inputs)).margin(0.001));
 }
+
+TEST_CASE("interpolationLinear") {
+    auto [expectedResult, x, x0, x1, y0, y1] =
+        GENERATE(table<double, double, double, double, double, double>({
+            {2.0, 1.0, 1.0, 3.0, 2.0, 6.0},
+            {6.0, 3.0, 1.0, 3.0, 2.0, 6.0},
+        }));
+
+    REQUIRE(
+        expectedResult ==
+        Catch::Approx(interpolationLinear(x, x0, x1, y0, y1)).epsilon(1e-10));
+}
+
+TEST_CASE("interpolationLinear: out of range") {
+    REQUIRE_THROWS_AS(interpolationLinear(-2, 1, 3, 4, 5), std::out_of_range);
+}

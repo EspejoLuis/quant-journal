@@ -21,10 +21,10 @@ class PdeEngine : public Engine {
     PdeCoefficients pdeCoeffs_;
 
     // Methods
+    void validateInputs() const;
     void defineGrid();
     void computeCoefficients();
-    void validateInputs() const;
-    void cflCondition() const;
     double explicitMethod(std::vector<double> valuesCurrent,
                           std::vector<double> valuesNext) const;
+    void cflCondition() const;
 };
