@@ -2,15 +2,6 @@
 #include "instrument.hpp"
 #include "optionParameters.hpp"
 
-enum class DigitalType { CashOrNothing, AssetOrNothing };
-
-struct DigitalOptionParameters {
-    double strike;
-    OptionType type;
-    OptionDirection direction;
-    DigitalType digitalType;
-};
-
 class DigitalEuropeanOption : public Instrument {
 
   public:

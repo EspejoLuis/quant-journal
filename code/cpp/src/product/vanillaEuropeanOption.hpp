@@ -2,12 +2,6 @@
 #include "instrument.hpp"
 #include "optionParameters.hpp"
 
-struct OptionParameters {
-    double strike;
-    OptionType type;
-    OptionDirection direction;
-};
-
 class VanillaEuropeanOption : public Instrument {
 
   public:
