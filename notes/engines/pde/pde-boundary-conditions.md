@@ -10,11 +10,15 @@ status: in-progress
 
 ## Types
 
-- **Dirichlet:** fix the value — $V = c$. Implementation: `V[0] = c` or `V[N] = c`.
-- **Neumann (first derivative):** fix the slope — $\partial V / \partial S = c$. Implementation: `V[0] = V[1] - c*dS` (lower), `V[N] = V[N-1] + c*dS` (upper). Special case $c = 0$: `V[N] = V[N-1]` (flat).
-- **Neumann (second derivative = 0):** zero curvature — $\partial^2 V / \partial S^2 = 0$. Implementation: `V[N] = 2*V[N-1] - V[N-2]` (linear extrapolation). QuantLib's default for vanilla outer boundaries.
+| Type | Formula | Time-dependent? | Implementation |
+| ---- | ------- | --------------- | -------------- |
+| Dirichlet (constant) | $V = c$ | No | `V[0] = c` or `V[N] = c` |
+| Dirichlet (time-dep.) | $V = f(t)$ | Yes | `V[0] = f(t)` each step. Examples: vanilla put lower $Ke^{-r(T-t)}$, CoN Dirichlet $Pe^{-r(T-t)}$ |
+| Neumann 1st (constant) | $\partial V/\partial S = c$ | No | `V[0] = V[1] - c*dS`, `V[N] = V[N-1] + c*dS`. $c=0$: flat |
+| Neumann 1st (time-dep.) | $\partial V/\partial S = g(t)$ | Yes | `V[N] = V[N-1] + g(t)*dS` each step. Example: AoN $e^{-q(T-t)}$ |
+| Neumann 2nd | $\partial^2 V/\partial S^2 = 0$ | No | `V[N] = 2*V[N-1] - V[N-2]` (linear extrapolation). QuantLib default |
 
-Neumann (first derivative) avoids time-dependent BCs. The vanilla put Dirichlet lower BC is $Ke^{-r(T-t)}$ (changes every step); Neumann $\partial V/\partial S = -1$ is constant and equally accurate far from the strike.
+Time-dependent BCs require `std::function<double(double t)>` in `BoundaryCondition`, evaluated at each step. `ModelParameters` ($r$, $q$, $T$) must be captured at construction to build the lambda.
 
 ## BC Table
 
