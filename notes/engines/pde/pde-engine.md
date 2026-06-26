@@ -2,7 +2,7 @@
 type: note
 category: engine
 tags: [pde, finite-difference, black-scholes, explicit, implicit, crank-nicolson]
-related: [black-scholes-formula, vanilla-european-option, pde-fd-coefficients]
+related: [black-scholes-formula, vanilla-european-option, pde-fd-coefficients, pde-boundary-conditions]
 status: in-progress
 ---
 
@@ -80,8 +80,7 @@ No $S_{\max}^2$ — the constraint is the same at every node. For large $S_{\max
 
 ### Boundary conditions
 
-- **$S = 0$ (Dirichlet):** $V_0^n = 0$ for a call (option worthless).
-- **$S = S_{\max}$ (Neumann — zero second derivative):** $V_N^n = 2 V_{N-1}^n - V_{N-2}^n$. Correct asymptotically because $\Delta \to 1$, $\Gamma \to 0$ as $S \to \infty$. No knowledge of $K$ required — works for any product.
+See [[pde-boundary-conditions]] for the full BC table (Dirichlet/Neumann per product) and implementation notes.
 
 ### Terminal condition
 
