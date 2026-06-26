@@ -153,11 +153,13 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
         .digitalType = DigitalType::AssetOrNothing,
     };
 
+    const double payAmount = 100;
     DigitalOptionParameters optionParamsCallLongCoN{
         .strike = strike,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     DigitalOptionParameters optionParamsCallShortCoN{
@@ -165,6 +167,7 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
         .type = OptionType::Call,
         .direction = OptionDirection::Short,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     double d1 =
@@ -183,7 +186,7 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
         normalCdf(d1);
 
     double unsignedPriceCoN =
-        strike *
+        payAmount *
         std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(d2);
 
@@ -226,11 +229,13 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         .digitalType = DigitalType::AssetOrNothing,
     };
 
+    const double payAmount = 100;
     DigitalOptionParameters optionParamsCallLongCoN{
         .strike = strike,
         .type = OptionType::Put,
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     DigitalOptionParameters optionParamsCallShortCoN{
@@ -238,6 +243,7 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         .type = OptionType::Put,
         .direction = OptionDirection::Short,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     double d1 =
@@ -256,7 +262,7 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         normalCdf(-d1);
 
     double unsignedPriceCoN =
-        strike *
+        payAmount *
         std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(-d2);
 

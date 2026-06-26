@@ -21,7 +21,7 @@ double DigitalEuropeanOption::payoff(const std::vector<double>& path) const {
     const double payoutAmount =
         optParams_.digitalType == DigitalType::AssetOrNothing
             ? underlyingPrice
-            : optParams_.strike;
+            : optParams_.payAmount.value();
 
     return sign * indicator * payoutAmount;
 };
@@ -46,4 +46,16 @@ void DigitalEuropeanOption::validateInputs() const {
     if (optParams_.digitalType != DigitalType::AssetOrNothing &&
         optParams_.digitalType != DigitalType::CashOrNothing)
         throw std::invalid_argument("invalid DigitalType");
+
+    if (optParams_.digitalType == DigitalType::AssetOrNothing &&
+        optParams_.payAmount)
+        throw std::invalid_argument("Asset or Nothing doesn't need payAmount");
+
+    if (optParams_.digitalType == DigitalType::CashOrNothing &&
+        !optParams_.payAmount)
+        throw std::invalid_argument("Cash or Nothing needs payAmount");
+
+    if (optParams_.digitalType == DigitalType::CashOrNothing &&
+        optParams_.payAmount < 0)
+        throw std::invalid_argument("payAmount cannot be negative");
 };

@@ -252,7 +252,8 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
         .strike = 87,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
-        .digitalType = DigitalType::CashOrNothing};
+        .digitalType = DigitalType::CashOrNothing,
+        .payAmount = 78};
 
     DigitalOptionParameters optionParamsCallAoN{
         .strike = 87,
@@ -297,7 +298,8 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
         .strike = 87,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
-        .digitalType = DigitalType::CashOrNothing};
+        .digitalType = DigitalType::CashOrNothing,
+        .payAmount = 67};
 
     DigitalOptionParameters optionParamsCallAoN{
         .strike = 87,

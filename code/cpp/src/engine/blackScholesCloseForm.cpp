@@ -47,6 +47,7 @@ double BsCloseForm::price(
     const double T = modelParams_.timeHorizonInYears;
 
     const double K = digitalEuropeanOption.parameters().strike;
+
     const OptionDirection direction =
         digitalEuropeanOption.parameters().direction;
     const OptionType type = digitalEuropeanOption.parameters().type;
@@ -59,9 +60,11 @@ double BsCloseForm::price(
 
     const double sign = direction == OptionDirection::Long ? 1.0 : -1.0;
 
-    const double payoutFactor = digitalType == DigitalType::AssetOrNothing
-                                    ? s0 * std::exp(-q * T)
-                                    : K * std::exp(-r * T);
+    const double payoutFactor =
+        digitalType == DigitalType::AssetOrNothing
+            ? s0 * std::exp(-q * T)
+            : digitalEuropeanOption.parameters().payAmount.value() *
+                  std::exp(-r * T);
 
     const double dFactor = digitalType == DigitalType::AssetOrNothing
                                ? (type == OptionType::Call ? +d1 : -d1)

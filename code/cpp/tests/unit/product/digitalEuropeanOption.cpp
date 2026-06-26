@@ -122,11 +122,13 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
     double strike = 98;
+    double payAmount = 100;
     DigitalOptionParameters optionParamsCall{
         .strike = strike,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     DigitalOptionParameters optionParamsPut{
@@ -134,6 +136,7 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
         .type = OptionType::Put,
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     McEngine mcEngine = McEngine{modelParams, simParams};
@@ -155,8 +158,8 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
     */
 
     REQUIRE(callPrice + putPrice ==
-            Catch::Approx(strike * std::exp(-modelParams.interestRate *
-                                            modelParams.timeHorizonInYears))
+            Catch::Approx(payAmount * std::exp(-modelParams.interestRate *
+                                               modelParams.timeHorizonInYears))
                 .epsilon(1e-10));
 }
 
@@ -173,18 +176,21 @@ TEST_CASE("DigitalEuropeanOption returns correct. Short Put-Call parity - Cash "
     SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
 
     double strike = 98;
+    double payAmount = 100;
     DigitalOptionParameters optionParamsCall{
         .strike = strike,
         .type = OptionType::Call,
-        .direction = OptionDirection::Short,
+        .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     DigitalOptionParameters optionParamsPut{
         .strike = strike,
         .type = OptionType::Put,
-        .direction = OptionDirection::Short,
+        .direction = OptionDirection::Long,
         .digitalType = DigitalType::CashOrNothing,
+        .payAmount = payAmount,
     };
 
     McEngine mcEngine = McEngine{modelParams, simParams};
@@ -205,10 +211,11 @@ TEST_CASE("DigitalEuropeanOption returns correct. Short Put-Call parity - Cash "
             - Put: K
     */
 
-    REQUIRE(callPrice + putPrice ==
-            -Catch::Approx(strike * std::exp(-modelParams.interestRate *
+    REQUIRE(
+        callPrice + putPrice ==
+        -Catch::Approx(-payAmount * std::exp(-modelParams.interestRate *
                                              modelParams.timeHorizonInYears))
-                 .epsilon(1e-10));
+             .epsilon(1e-10));
 }
 
 TEST_CASE("DigitalEuropeanOption returns error. invalid OptionType.",
@@ -218,6 +225,8 @@ TEST_CASE("DigitalEuropeanOption returns error. invalid OptionType.",
         .strike = 10,
         .type = static_cast<OptionType>(99),
         .direction = OptionDirection::Long,
+        .digitalType = DigitalType::CashOrNothing,
+        .payAmount = 10,
     };
 
     REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
@@ -231,6 +240,8 @@ TEST_CASE("DigitalEuropeanOption returns error. invalid OptionDirection.",
         .strike = 10,
         .type = OptionType::Call,
         .direction = static_cast<OptionDirection>(99),
+        .digitalType = DigitalType::CashOrNothing,
+        .payAmount = 10,
     };
 
     REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
@@ -245,6 +256,7 @@ TEST_CASE("DigitalEuropeanOption returns error. invalid DigitalType.",
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
         .digitalType = static_cast<DigitalType>(4),
+        .payAmount = 10,
     };
 
     REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
@@ -258,7 +270,50 @@ TEST_CASE("DigitalEuropeanOption returns error. Negative Strike.",
         .strike = -10,
         .type = OptionType::Call,
         .direction = OptionDirection::Long,
+        .digitalType = DigitalType::CashOrNothing,
+        .payAmount = 10,
     };
+
+    REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
+}
+
+TEST_CASE("DigitalEuropeanOption returns error. payAmount not needed",
+          "[digitalEuropeanOption]") {
+
+    DigitalOptionParameters optionParamsCall{.strike = 10,
+                                             .type = OptionType::Call,
+                                             .direction = OptionDirection::Long,
+                                             .digitalType =
+                                                 DigitalType::AssetOrNothing,
+                                             .payAmount = 10};
+
+    REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
+}
+
+TEST_CASE("DigitalEuropeanOption returns error. payAmount needed",
+          "[digitalEuropeanOption]") {
+
+    DigitalOptionParameters optionParamsCall{.strike = 10,
+                                             .type = OptionType::Call,
+                                             .direction = OptionDirection::Long,
+                                             .digitalType =
+                                                 DigitalType::CashOrNothing};
+
+    REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
+                      std::invalid_argument);
+}
+
+TEST_CASE("DigitalEuropeanOption returns error. invalid payAmount",
+          "[digitalEuropeanOption]") {
+
+    DigitalOptionParameters optionParamsCall{.strike = 10,
+                                             .type = OptionType::Call,
+                                             .direction = OptionDirection::Long,
+                                             .digitalType =
+                                                 DigitalType::CashOrNothing,
+                                             .payAmount = -9};
 
     REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
                       std::invalid_argument);
