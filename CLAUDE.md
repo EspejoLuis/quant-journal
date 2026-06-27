@@ -166,21 +166,21 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 code/cpp/src/
 ├── common/
 │   ├── modelParameters.hpp      ← ModelParameters struct (shared by engine + product)
-│   ├── optionParameters.hpp     ← OptionType, OptionDirection enums (shared by Vanilla + Digital)
-│   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf, interpolationLinear (header-only inline)
+│   ├── optionParameters.hpp     ← OptionType, OptionDirection, DigitalType enums; OptionParameters struct; DigitalOptionParameters struct {strike, type, direction, digitalType, payAmount (optional<double>)}
+│   ├── mathFunctions.hpp        ← mean, sampleVariance, sampleStdDev, normalCdf, interpolationLinear (throws out_of_range if x outside [x0,x1]) (header-only inline)
 │   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
 │   ├── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
 │   ├── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct, PdeCoefficients struct {a,b,c}, PdeGridParameters struct {spaceGrid,spaceMin,spaceMax,spaceDelta,timeDelta}
 │   └── vectorUtils.hpp          ← findClosestIndex(v, target) — lower_bound + distance, ptrdiff_t return; throws out_of_range if target outside grid
 ├── engine/
-│   ├── engine.hpp               ← abstract base: virtual double price(const Instrument&) = 0
-│   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters
-│   ├── monteCarloEngine.cpp     ← McEngine::price(), validateGbmInputs(); calls simulateGbmPath() from pathGeneration.hpp
+│   ├── engine.hpp               ← abstract base: forward-declares Instrument (no include); nested Engine::Arguments {virtual ~Arguments()}; pure virtuals calculate(), getArguments()→Arguments*, getResult()→double
+│   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters; nested McEngine::Arguments : Engine::Arguments {std::function<double(const vector<double>&)> payoff}
+│   ├── monteCarloEngine.cpp     ← McEngine::calculate(), validateGbmInputs(); calls simulateGbmPath() from pathGeneration.hpp
 │   ├── blackScholesCloseForm.hpp/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.hpp
 │   ├── chooserEngine.hpp/cpp    ← ChooserEngine; does NOT derive Engine; price(const ChooserEuropeanOption&); simulates to T_c via simulateGbmPath(), BS sub-prices per path, discounts by e^{-rT_c}
 │   └── pdeEngine.hpp/cpp        ← PdeEngine derives Engine; stores ModelParameters + PdeParameters; 1D Explicit/Implicit/CN schemes; S_max from GBM 3-sigma; 2D ADI (planned)
 └── product/
-    ├── instrument.hpp              ← non-pure-virtual base: payoff(path) default throws; products that can express payoff as f(path) override it; others (Chooser, Cliquet) derive but do not override
+    ├── instrument.hpp              ← concrete price() + setPricingEngine(Engine*) + Engine* engine_=nullptr; virtual setupArguments(Engine::Arguments*) default throws; virtual payoff(path) default throws; products override payoff() and setupArguments(); Chooser/Cliquet derive but do not override payoff()
     ├── vanillaEuropeanOption.hpp/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
     ├── digitalEuropeanOption.hpp/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
     └── chooserEuropeanOption.hpp/cpp ← derives Instrument (does NOT override payoff); ChooserOptionParameters {strike, maturity (=T), direction}; ModelParameters.timeHorizonInYears = T_c; priced via ChooserEngine + BsCloseForm::price() overload
@@ -188,8 +188,8 @@ code/cpp/src/
 
 **Design principles:**
 
-- `Engine` defines *how* to price (MC, PDE) — pure virtual `price(const Instrument&)`
-- `Instrument` defines *what* to price — `payoff(const vector<double>& path) const` is **non-pure virtual** (default throws); most products override it; products needing model params at intermediate dates (Chooser, Cliquet) derive from `Instrument` but do not override `payoff()`
+- `Engine` defines *how* to price (MC, PDE) — pure virtuals `calculate()`, `getArguments()→Arguments*`, `getResult()→double`; nested `Engine::Arguments` struct with virtual destructor (vtable required for `dynamic_cast`); forward-declares `Instrument` (no include, breaks circular dependency)
+- `Instrument` defines *what* to price — concrete `price()` drives the QuantLib flow: `setupArguments(engine_->getArguments())` → `engine_->calculate()` → `engine_->getResult()`; concrete `setPricingEngine(Engine*)` stores engine; virtual `setupArguments(Engine::Arguments*)` (default throws) overridden by each product to `dynamic_cast` and fill the engine's typed arguments; virtual `payoff(const vector<double>& path) const` **non-pure** (default throws); most products override both; Chooser/Cliquet derive but do not override `payoff()`
 - `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency; `timeHorizonInYears` = full option maturity T for all products
 - `SimulationParameters` lives in `common/simulationParameters.hpp` — shared by all MC engines; BS/PDE engines don't need it
 - `McEngine` stores `ModelParameters` and `SimulationParameters` as private value members, validated in the constructor
@@ -262,7 +262,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 
 ## Weekly Schedule
 
-### Block A — GBM engine + BS products (~14 weeks, Jun 5 – Sep 5)
+### Block A — GBM engine + BS products (~16 weeks, Jun 5 – Sep 19)
 
 #### Week 1 — Jun 5–10: Engine Seed
 
@@ -280,7 +280,7 @@ Build the minimum viable engine — one path generator, one PDE solver, one prod
 
 ---
 
-#### Week 2 — Jun 10–28: Digital Option + Chooser Option
+#### Week 2 — Jun 10–27: Digital Option + Chooser Option + Architecture
 
 No new engine code — these are pure payoff changes on top of the GBM engine. PDE engine (1D CN) deferred to Weeks 3–4.
 
@@ -302,7 +302,7 @@ Code: `code/cpp/products/chooser.cpp`
 
 ---
 
-#### Weeks 3–4 — Jun 29 – Jul 13: PDE Engine + Asian Option
+#### Weeks 3–4 — Jun 28 – Jul 18: PDE Engine + Asian Option
 
 First engine extension: add path-average accumulation. Also complete PDE engine (1D Forward Euler, Backward Euler, Crank-Nicolson) deferred from Week 2.
 
@@ -318,7 +318,7 @@ Code: `code/cpp/products/asian.cpp`
 
 ---
 
-#### Weeks 5–6 — Jul 14–29: Barrier Option
+#### Weeks 5–6 — Jul 19 – Aug 1: Barrier Option
 
 Engine extension: barrier condition checking in MC + absorbing BC in PDE.
 
@@ -333,7 +333,7 @@ Code: `code/cpp/products/barrier.cpp`
 
 ---
 
-#### Weeks 7–8 — Jul 30 – Aug 13: Lookback Option
+#### Weeks 7–8 — Aug 2–16: Lookback Option
 
 Engine extension: running max/min tracking + 2D PDE.
 
@@ -348,7 +348,7 @@ Code: `code/cpp/products/lookback.cpp`
 
 ---
 
-#### Weeks 9–10 — Aug 14–28: Variance Swap + Volatility Swap
+#### Weeks 9–10 — Aug 17–30: Variance Swap + Volatility Swap
 
 Engine extension: log-return accumulation.
 
@@ -372,7 +372,7 @@ Code: `code/cpp/products/vol_swap.cpp`
 
 ---
 
-#### Week 11 — Aug 29 – Sep 5: American MC (Longstaff-Schwartz)
+#### Week 11 — Aug 31 – Sep 12: American MC (Longstaff-Schwartz)
 
 Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
 
@@ -394,9 +394,9 @@ Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique 
 
 ---
 
-### Block B — Local Vol engine + products (~7 weeks, Sep 1 – Oct 17)
+### Block B — Local Vol engine + products (~7 weeks, Sep 13 – Nov 1)
 
-#### Weeks 12–14 — Sep 1–19: Local Volatility (Dupire)
+#### Weeks 12–14 — Sep 13 – Oct 3: Local Volatility (Dupire)
 
 Engine extension: `simulateLocalVolPath()` in `mc_engine.h`.
 
@@ -417,7 +417,7 @@ Code: `code/cpp/models/local_vol.cpp`
 
 ---
 
-#### Weeks 15–16 — Sep 20 – Oct 3: Range Accrual
+#### Weeks 15–16 — Oct 4–17: Range Accrual
 
 Note: `notes/products/range-accrual.md`
 Code: `code/cpp/products/range_accrual.cpp`
@@ -428,7 +428,7 @@ Code: `code/cpp/products/range_accrual.cpp`
 
 ---
 
-#### Weeks 17–18 — Oct 4–17: Cliquet Option
+#### Weeks 17–18 — Oct 18–31: Cliquet Option
 
 Note: `notes/products/cliquet-option.md`
 Code: `code/cpp/products/cliquet.cpp`
@@ -439,9 +439,9 @@ Code: `code/cpp/products/cliquet.cpp`
 
 ---
 
-### Block C — Correlated GBM + multi-asset products (~4 weeks, Oct 18 – Nov 14)
+### Block C — Correlated GBM + multi-asset products (~4 weeks, Nov 1 – Nov 28)
 
-#### Weeks 19–20 — Oct 18–31: Rainbow Option
+#### Weeks 19–20 — Nov 1–14: Rainbow Option
 
 Engine extension: `simulate_correlated_gbm_path()` using Cholesky.
 
@@ -456,7 +456,7 @@ Code: `code/cpp/products/rainbow.cpp`
 
 ---
 
-#### Weeks 21–22 — Nov 1–14: Worst-of Option
+#### Weeks 21–22 — Nov 15–28: Worst-of Option
 
 First use of LSM in a multi-asset setting.
 
@@ -469,9 +469,9 @@ Code: `code/cpp/products/worst_of.cpp`
 
 ---
 
-### Block D — Heston engine + products (~6 weeks, Nov 15 – Dec 26)
+### Block D — Heston engine + products (~6 weeks, Nov 29 – Jan 9 2027)
 
-#### Weeks 23–25 — Nov 15 – Dec 5: Heston Model
+#### Weeks 23–25 — Nov 29 – Dec 19: Heston Model
 
 Engine extension: `simulateHestonPath()` + 2D ADI in `pde_engine.h`.
 
@@ -495,7 +495,7 @@ Code: `code/cpp/models/heston.cpp`
 
 ---
 
-#### Weeks 26–28 — Dec 6–26: Accumulator
+#### Weeks 26–28 — Dec 20 – Jan 9 2027: Accumulator
 
 LSM + Heston: knock-out is a path-dependent stopping condition, natural fit for LSM.
 
@@ -508,9 +508,9 @@ Code: `code/cpp/products/accumulator.cpp`
 
 ---
 
-### Block E — SLV engine + Autocallable (~11 weeks, Jan 5 – Mar 20 2027)
+### Block E — SLV engine + Autocallable (~11 weeks, Jan 10 – Apr 3 2027)
 
-#### Weeks 29–32 — Jan 5 – Feb 1: Stochastic Local Vol (SLV)
+#### Weeks 29–32 — Jan 10 – Feb 6 2027: Stochastic Local Vol (SLV)
 
 Engine extension: `simulate_slv_path()` + leverage function calibration.
 
@@ -533,7 +533,7 @@ Code: `code/cpp/models/slv.cpp`
 
 ---
 
-#### Weeks 33–38 — Feb 2 – Mar 20: Autocallable
+#### Weeks 33–38 — Feb 7 – Apr 3 2027: Autocallable
 
 LSM + SLV + AAD: the capstone product.
 
