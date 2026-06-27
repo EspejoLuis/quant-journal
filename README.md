@@ -9,7 +9,7 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 | Model | Feature | `.hpp` | `.cpp` | Tests | Status |
 | ----- | ------- | ------ | ------ | ----- | ------ |
 | **GBM** | Path simulation (`simulateGbmPath`) | [.hpp](code/cpp/src/common/pathGeneration.hpp) | — (header-only) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L89) | Done |
-| | Antithetic variates (`VarianceReduction::Antithetic`) | [.hpp](code/cpp/src/common/simulationParameters.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp#L52) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
+| | Antithetic variates (`VarianceReduction::Antithetic`) | [.hpp](code/cpp/src/common/pathGeneration.hpp) | — (header-only) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp#L158) | Done |
 | | Closed-form (`BsCloseForm`) | [.hpp](code/cpp/src/engine/blackScholesCloseForm.hpp) | [.cpp](code/cpp/src/engine/blackScholesCloseForm.cpp) | [tests](code/cpp/tests/unit/engine/blackScholesCloseForm.cpp) | Done |
 | **Local Volatility (Dupire)** | Bilinear interpolation on $\sigma(S,t)$ grid | — | — | — | Planned |
 | | Forward PDE calibration | — | — | — | Planned |
@@ -24,16 +24,16 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 
 | Method | Feature | `.hpp` | `.cpp` | Tests | Status |
 | ------ | ------- | ------ | ------ | ----- | ------ |
-| **Monte Carlo** | GBM engine (`McEngine`) | [.hpp](code/cpp/src/engine/monteCarloEngine.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
-| | Antithetic variates | [.hpp](code/cpp/src/common/simulationParameters.hpp) | [.cpp](code/cpp/src/engine/monteCarloEngine.cpp) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
+| **Monte Carlo** | GBM engine (`McEngine<T>`) | [.hpp](code/cpp/src/engine/monteCarloEngine.hpp) | — (header-only) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
+| | Antithetic variates | [.hpp](code/cpp/src/common/pathGeneration.hpp) | — (header-only) | [tests](code/cpp/tests/unit/engine/monteCarloEngine.cpp) | Done |
 | | Chooser engine (`ChooserEngine`) | [.hpp](code/cpp/src/engine/chooserEngine.hpp) | [.cpp](code/cpp/src/engine/chooserEngine.cpp) | [tests](code/cpp/tests/integration/engine/chooserEngine.cpp) | Done |
 | | Control variates | — | — | — | Planned |
 | | Importance sampling | — | — | — | Planned |
 | | Quasi-MC with Sobol sequences | — | — | — | Planned |
 | **Longstaff-Schwartz (LSM)** | Continuation value regression | — | — | — | Planned |
-| **Finite Differences** | 1D Explicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
-| | 1D Implicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
-| | 1D Crank-Nicolson (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | [.cpp](code/cpp/src/engine/pdeEngine.cpp) | — | In progress |
+| **Finite Differences** | 1D Explicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | — (header-only) | — | In progress |
+| | 1D Implicit scheme (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | — (header-only) | — | In progress |
+| | 1D Crank-Nicolson (BS PDE) | [.hpp](code/cpp/src/engine/pdeEngine.hpp) | — (header-only) | — | In progress |
 | | 2D Crank-Nicolson (Lookback, S×M grid) | — | — | — | Planned |
 | | 2D Craig-Sneyd ADI (Heston/SLV, S×v grid) | — | — | — | Planned |
 | **AAD** | Greeks via reverse-mode automatic differentiation | — | — | — | Planned |
@@ -74,3 +74,4 @@ A comprehensive, version-controlled repository documenting research, analysis, a
 - [PDE Engine](notes/engines/pde/pde-engine.md)
 - [PDE Finite-Difference Coefficients](notes/engines/pde/pde-fd-coefficients.md)
 - [PDE Boundary Conditions](notes/engines/pde/pde-boundary-conditions.md)
+- [Engine / Instrument Architecture](notes/engines/engine-instrument-architecture.md)

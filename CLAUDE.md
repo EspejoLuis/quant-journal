@@ -174,32 +174,31 @@ code/cpp/src/
 │   └── vectorUtils.hpp          ← findClosestIndex(v, target) — lower_bound + distance, ptrdiff_t return; throws out_of_range if target outside grid
 ├── engine/
 │   ├── engine.hpp               ← abstract base: forward-declares Instrument (no include); nested Engine::Arguments {virtual ~Arguments()}; pure virtuals calculate(), getArguments()→Arguments*, getResult()→double
-│   ├── monteCarloEngine.hpp     ← McEngine class (derives Engine); stores ModelParameters + SimulationParameters; nested McEngine::Arguments : Engine::Arguments {std::function<double(const vector<double>&)> payoff}
-│   ├── monteCarloEngine.cpp     ← McEngine::calculate(), validateGbmInputs(); calls simulateGbmPath() from pathGeneration.hpp
-│   ├── blackScholesCloseForm.hpp/cpp ← BsCloseForm class; does NOT derive Engine; price() overloads for VanillaEuropeanOption + DigitalEuropeanOption; normalCdf from mathFunctions.hpp
-│   ├── chooserEngine.hpp/cpp    ← ChooserEngine; does NOT derive Engine; price(const ChooserEuropeanOption&); simulates to T_c via simulateGbmPath(), BS sub-prices per path, discounts by e^{-rT_c}
-│   └── pdeEngine.hpp/cpp        ← PdeEngine derives Engine; stores ModelParameters + PdeParameters; 1D Explicit/Implicit/CN schemes; S_max from GBM 3-sigma; 2D ADI (planned)
+│   ├── monteCarloEngine.hpp     ← McEngine<T> template (header-only); stores ModelParameters + SimulationParameters; typename T::Arguments args_; calculate() calls args_.payoff(path.back()); getArguments() returns &args_
+│   ├── blackScholesCloseForm.hpp ← BsCloseForm<T> template derives Engine (declarations only); private DFactors{d1,d2}; computeDFactors(); full specialization declarations: template<> void calculate() for VanillaEuropeanOption, DigitalEuropeanOption, ChooserEuropeanOption
+│   ├── blackScholesCloseForm.cpp ← full specialization definitions: Vanilla — sign × BS call/put; Digital — payoutFactor × N(d); Chooser — C(K,T) + e^{-q(T-Tc)}·P(Kdisc,Tc) via put-call parity decomposition
+│   ├── chooserEngine.hpp/cpp    ← ChooserEngine derives Engine; getArguments/calculate/getResult; ChooserEuropeanOption::Arguments args_; calculate() MC to T_c → BsCloseForm<VanillaEuropeanOption> sub-price per path; discounts by e^{-r*T_c}
+│   └── pdeEngine.hpp            ← PdeEngine<T> template (header-only); stores ModelParameters + PdeParameters; typename T::Arguments args_; calculate() sets terminal condition via args_.payoff(grid_.spaceGrid[i]); 1D Explicit done; Implicit/CN stubs (return 0.0)
 └── product/
-    ├── instrument.hpp              ← concrete price() + setPricingEngine(Engine*) + Engine* engine_=nullptr; virtual setupArguments(Engine::Arguments*) default throws; virtual payoff(path) default throws; products override payoff() and setupArguments(); Chooser/Cliquet derive but do not override payoff()
-    ├── vanillaEuropeanOption.hpp/cpp ← derives Instrument; payoff() ternary call/put; parameters() getter returns const OptionParameters&
-    ├── digitalEuropeanOption.hpp/cpp ← derives Instrument; payoff() uses indicator + payoutAmount ternaries; BS priced via BsCloseForm::price() overload
-    └── chooserEuropeanOption.hpp/cpp ← derives Instrument (does NOT override payoff); ChooserOptionParameters {strike, maturity (=T), direction}; ModelParameters.timeHorizonInYears = T_c; priced via ChooserEngine + BsCloseForm::price() overload
+    ├── instrument.hpp              ← NVI pattern: price() + setPricingEngine(Engine*) public non-virtual; setArguments(Engine::Arguments*) PRIVATE virtual (default throws std::logic_error); Engine* engine_=nullptr
+    ├── instrument.cpp              ← price(): setArguments(engine_->getArguments()) → engine_->calculate() → getResult(); setPricingEngine(): null check + engine_=engine
+    ├── vanillaEuropeanOption.hpp/cpp ← Arguments{OptionParameters engineParams; double payoff(double S) const}; setArguments private: dynamic_cast<VanillaEuropeanOption::Arguments*>, set engineParams
+    ├── digitalEuropeanOption.hpp/cpp ← Arguments{DigitalOptionParameters engineParams; double payoff(double S) const}; setArguments private
+    └── chooserEuropeanOption.hpp/cpp ← Arguments{ChooserOptionParameters engineParams} — no payoff(double S) (requires mid-path BS sub-pricing, not scalar payoff); setArguments private
 ```
 
 **Design principles:**
 
-- `Engine` defines *how* to price (MC, PDE) — pure virtuals `calculate()`, `getArguments()→Arguments*`, `getResult()→double`; nested `Engine::Arguments` struct with virtual destructor (vtable required for `dynamic_cast`); forward-declares `Instrument` (no include, breaks circular dependency)
-- `Instrument` defines *what* to price — concrete `price()` drives the QuantLib flow: `setupArguments(engine_->getArguments())` → `engine_->calculate()` → `engine_->getResult()`; concrete `setPricingEngine(Engine*)` stores engine; virtual `setupArguments(Engine::Arguments*)` (default throws) overridden by each product to `dynamic_cast` and fill the engine's typed arguments; virtual `payoff(const vector<double>& path) const` **non-pure** (default throws); most products override both; Chooser/Cliquet derive but do not override `payoff()`
+- `Engine` defines *how* to price (MC, PDE, analytic) — pure virtuals `calculate()`, `getArguments()→Arguments*`, `getResult()→double`; nested `Engine::Arguments` struct with virtual destructor (vtable required for `dynamic_cast`); forward-declares `Instrument` (no include, breaks circular dependency)
+- `Instrument` uses NVI (Non-Virtual Interface) — `price()` and `setPricingEngine()` are public non-virtual; `setArguments(Engine::Arguments*)` is **private virtual** (default throws); `price()` calls `setArguments()` through virtual dispatch; callers outside the class cannot invoke `setArguments` directly; no `payoff(path)` virtual — payoff logic lives in `T::Arguments`
 - `ModelParameters` lives in `common/` — shared by engine and instrument, no circular dependency; `timeHorizonInYears` = full option maturity T for all products
 - `SimulationParameters` lives in `common/simulationParameters.hpp` — shared by all MC engines; BS/PDE engines don't need it
-- `McEngine` stores `ModelParameters` and `SimulationParameters` as private value members, validated in the constructor
-- `McEngine::price()` computes discount factor per path inside the loop — ready for stochastic interest rates
-- Generic `McEngine` prices products where payoff is a pure function of the path (vanilla, digital, Asian, barrier, lookback, variance swap, rainbow, worst-of, accumulator, autocallable)
-- Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines (e.g. `ChooserEngine`) — same pattern as `BsCloseForm` not deriving `Engine`
-- `ChooserEngine`: `ModelParameters.timeHorizonInYears` = T_c (simulation horizon); `ChooserOptionParameters.maturity` = T (full expiry); simulates to T_c, constructs `ModelParameters` copy per path with `underlyingPrice = S_{T_c}` and `timeHorizonInYears = T - T_c`, discounts by e^{-r*T_c}
-- `BsCloseForm` does NOT derive `Engine` — analytic engines need instrument-specific parameters (strike, type) that are not on the `Instrument` interface; forcing them through would require `dynamic_cast`
-- `PdeEngine` computes `grid_` (PdeGridParameters) and `pdeCoeffs_` (PdeCoefficients) in the constructor, not in `price()` — grid and coefficients are fixed for the lifetime of the engine; `price()` is effectively read-only and thread-safe without locks (CP.1 extended to PDE engines)
-- `simulateGbmPath` and `createRng` are free inline functions in `common/pathGeneration.hpp` — stateless (CP.1), reusable by any engine, tested through `McEngine::price()` and `ChooserEngine::price()`
+- `McEngine<T>` is a class template (header-only) — `typename T::Arguments args_`; `calculate()` calls `args_.payoff(path.back())` for European payoffs and computes discount factor per path (ready for stochastic rates); generic for any product where payoff is a scalar function of spot at maturity
+- `BsCloseForm<T>` derives `Engine` — class template with full specializations for `VanillaEuropeanOption`, `DigitalEuropeanOption`, `ChooserEuropeanOption`; specialization bodies in `.cpp` (not header) because full specializations are regular functions — defining in a header included by multiple TUs causes duplicate-symbol linker errors
+- `PdeEngine<T>` is a class template (header-only) — `typename T::Arguments args_`; computes `grid_` and `pdeCoeffs_` in constructor; `calculate()` sets terminal condition via `args_.payoff(grid_.spaceGrid[i])` then backward-sweeps; `calculate()` is read-only and thread-safe (CP.1)
+- Products requiring mid-path BS sub-pricing (Chooser, Cliquet) get dedicated typed engines — `ChooserEngine` derives `Engine`; `ChooserOptionParameters.maturity` = T (full expiry); `ModelParameters.timeHorizonInYears` = T_c; simulates to T_c, `BsCloseForm<VanillaEuropeanOption>` sub-prices per path with `underlyingPrice = S_{T_c}`, discounts by e^{-r*T_c}
+- `T::Arguments` (instrument-level nested struct) — `struct Arguments : Engine::Arguments` with `engineParams` + `payoff(double S) const`; `setArguments()` does one `dynamic_cast<T::Arguments*>` (throws `std::logic_error` if wrong engine type) then copies `params_` to `args_.engineParams`; Chooser `Arguments` omits `payoff(double S)` (scalar payoff undefined for chooser)
+- `simulateGbmPath` and `createRng` are free inline functions in `common/pathGeneration.hpp` — stateless (CP.1), reusable by any engine
 
 **`monteCarloEngine` grows one function per block:**
 
@@ -262,7 +261,7 @@ The plan is incremental: each block extends the engine by one capability, then i
 
 ## Weekly Schedule
 
-### Block A — GBM engine + BS products (~16 weeks, Jun 5 – Sep 19)
+### Block A — GBM engine + BS products (~17 weeks, Jun 5 – Sep 26)
 
 #### Week 1 — Jun 5–10: Engine Seed
 
@@ -280,7 +279,7 @@ Build the minimum viable engine — one path generator, one PDE solver, one prod
 
 ---
 
-#### Week 2 — Jun 10–27: Digital Option + Chooser Option + Architecture
+#### Week 2 — Jun 10 – Jul 4: Digital Option + Chooser Option + Architecture
 
 No new engine code — these are pure payoff changes on top of the GBM engine. PDE engine (1D CN) deferred to Weeks 3–4.
 
@@ -302,7 +301,7 @@ Code: `code/cpp/products/chooser.cpp`
 
 ---
 
-#### Weeks 3–4 — Jun 28 – Jul 18: PDE Engine + Asian Option
+#### Weeks 3–4 — Jul 5 – Jul 25: PDE Engine + Asian Option
 
 First engine extension: add path-average accumulation. Also complete PDE engine (1D Forward Euler, Backward Euler, Crank-Nicolson) deferred from Week 2.
 
@@ -318,7 +317,7 @@ Code: `code/cpp/products/asian.cpp`
 
 ---
 
-#### Weeks 5–6 — Jul 19 – Aug 1: Barrier Option
+#### Weeks 5–6 — Jul 26 – Aug 8: Barrier Option
 
 Engine extension: barrier condition checking in MC + absorbing BC in PDE.
 
@@ -333,7 +332,7 @@ Code: `code/cpp/products/barrier.cpp`
 
 ---
 
-#### Weeks 7–8 — Aug 2–16: Lookback Option
+#### Weeks 7–8 — Aug 9–22: Lookback Option
 
 Engine extension: running max/min tracking + 2D PDE.
 
@@ -348,7 +347,7 @@ Code: `code/cpp/products/lookback.cpp`
 
 ---
 
-#### Weeks 9–10 — Aug 17–30: Variance Swap + Volatility Swap
+#### Weeks 9–10 — Aug 23 – Sep 5: Variance Swap + Volatility Swap
 
 Engine extension: log-return accumulation.
 
@@ -372,7 +371,7 @@ Code: `code/cpp/products/vol_swap.cpp`
 
 ---
 
-#### Week 11 — Aug 31 – Sep 12: American MC (Longstaff-Schwartz)
+#### Week 11 — Sep 6 – Sep 19: American MC (Longstaff-Schwartz)
 
 Engine extension: add `priceLsm()` to `mc_engine.h`. This is the core technique needed for Worst-of, Accumulator, and Autocallable.
 
