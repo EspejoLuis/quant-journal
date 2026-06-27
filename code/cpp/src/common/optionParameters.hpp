@@ -19,3 +19,9 @@ struct DigitalOptionParameters {
     DigitalType digitalType;
     std::optional<double> payAmount;
 };
+
+struct ChooserOptionParameters {
+    double strike;
+    double maturity;
+    OptionDirection direction;
+};

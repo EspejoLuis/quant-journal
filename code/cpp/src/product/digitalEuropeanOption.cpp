@@ -1,61 +1,67 @@
 #include "digitalEuropeanOption.hpp"
 
 DigitalEuropeanOption::DigitalEuropeanOption(
-    const DigitalOptionParameters& optParams)
-    : optParams_(optParams) {
+    const DigitalOptionParameters& params)
+    : params_(params) {
 
     validateInputs();
 };
 
-double DigitalEuropeanOption::payoff(const std::vector<double>& path) const {
-
-    const double sign =
-        optParams_.direction == OptionDirection::Long ? 1.0 : -1.0;
-
-    const double underlyingPrice = path.back();
-
-    const bool indicator = optParams_.type == OptionType::Call
-                               ? underlyingPrice >= optParams_.strike
-                               : underlyingPrice < optParams_.strike;
-
-    const double payoutAmount =
-        optParams_.digitalType == DigitalType::AssetOrNothing
-            ? underlyingPrice
-            : optParams_.payAmount.value();
-
-    return sign * indicator * payoutAmount;
-};
-
-const DigitalOptionParameters& DigitalEuropeanOption::parameters() const {
-    return optParams_;
-};
-
 void DigitalEuropeanOption::validateInputs() const {
 
-    if (optParams_.strike < 0)
+    if (params_.strike < 0)
         throw std::invalid_argument("strike cannot be negative");
 
-    if (optParams_.type != OptionType::Call &&
-        optParams_.type != OptionType::Put)
+    if (params_.type != OptionType::Call && params_.type != OptionType::Put)
         throw std::invalid_argument("invalid OptionType");
 
-    if (optParams_.direction != OptionDirection::Short &&
-        optParams_.direction != OptionDirection::Long)
+    if (params_.direction != OptionDirection::Short &&
+        params_.direction != OptionDirection::Long)
         throw std::invalid_argument("invalid OptionDirection");
 
-    if (optParams_.digitalType != DigitalType::AssetOrNothing &&
-        optParams_.digitalType != DigitalType::CashOrNothing)
+    if (params_.digitalType != DigitalType::AssetOrNothing &&
+        params_.digitalType != DigitalType::CashOrNothing)
         throw std::invalid_argument("invalid DigitalType");
 
-    if (optParams_.digitalType == DigitalType::AssetOrNothing &&
-        optParams_.payAmount)
+    if (params_.digitalType == DigitalType::AssetOrNothing && params_.payAmount)
         throw std::invalid_argument("Asset or Nothing doesn't need payAmount");
 
-    if (optParams_.digitalType == DigitalType::CashOrNothing &&
-        !optParams_.payAmount)
+    if (params_.digitalType == DigitalType::CashOrNothing && !params_.payAmount)
         throw std::invalid_argument("Cash or Nothing needs payAmount");
 
-    if (optParams_.digitalType == DigitalType::CashOrNothing &&
-        optParams_.payAmount < 0)
+    if (params_.digitalType == DigitalType::CashOrNothing &&
+        params_.payAmount < 0)
         throw std::invalid_argument("payAmount cannot be negative");
+};
+
+void DigitalEuropeanOption::setArguments(Engine::Arguments* args) const {
+    if (!args)
+        throw std::logic_error("This is not the right engine");
+
+    DigitalEuropeanOption::Arguments* engineArgs =
+        dynamic_cast<DigitalEuropeanOption::Arguments*>(args);
+
+    if (!engineArgs)
+        throw std::logic_error("This is not the right engine");
+
+    engineArgs->engineParams = params_;
+};
+
+double DigitalEuropeanOption::Arguments::payoff(const double underlying) const {
+
+    const double sign =
+        engineParams.direction == OptionDirection::Long ? 1.0 : -1.0;
+
+    const double underlyingPrice = underlying;
+
+    const bool indicator = engineParams.type == OptionType::Call
+                               ? underlyingPrice >= engineParams.strike
+                               : underlyingPrice < engineParams.strike;
+
+    const double payoutAmount =
+        engineParams.digitalType == DigitalType::AssetOrNothing
+            ? underlyingPrice
+            : engineParams.payAmount.value();
+
+    return sign * indicator * payoutAmount;
 };

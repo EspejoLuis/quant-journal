@@ -1,13 +1,18 @@
 #pragma once
+#include "engine.hpp"
 #include <stdexcept>
-#include <vector>
 
-// What to price
 class Instrument {
 
   public:
-    virtual double payoff(const std::vector<double>& path) const {
-        throw std::logic_error("payoff() not implemented for this instrument");
-    };
+    void setPricingEngine(Engine* engine);
+
+    double price();
     virtual ~Instrument() = default;
+
+  private:
+    virtual void setArguments(Engine::Arguments* arguments) const {
+        throw std::logic_error("setArguments is not set for this instrument");
+    };
+    Engine* engine_ = nullptr;
 };

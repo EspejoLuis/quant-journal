@@ -26,20 +26,27 @@ TEST_CASE("validateInputs returns error. Incorrect SimulationParameters ",
 
     SimulationParameters simParams{.nPaths = nP, .nSteps = nS};
 
-    REQUIRE_THROWS_AS(McEngine(modelParams, simParams), std::invalid_argument);
+    OptionParameters optionParamsCall{
+        .strike = 87,
+        .type = OptionType::Call,
+        .direction = OptionDirection::Long,
+    };
+
+    CHECK_THROWS_AS(McEngine<VanillaEuropeanOption>(modelParams, simParams),
+                    std::invalid_argument);
 
     SimulationParameters simParamsVarRed{
         .nPaths = 1,
         .nSteps = 1,
         .varianceReduction = static_cast<VarianceReduction>(10)};
 
-    REQUIRE_THROWS_AS(McEngine(modelParams, simParamsVarRed),
-                      std::invalid_argument);
+    CHECK_THROWS_AS(
+        McEngine<VanillaEuropeanOption>(modelParams, simParamsVarRed),
+        std::invalid_argument);
 }
 
 TEST_CASE("validateInputs returns error. Incorrect ModelParameters ",
           "[monteCarloEngine]") {
-
     auto [s0, r, q, sigma, T] =
         GENERATE(table<double, double, double, double, double>({
             {-100.0, 0.05, 0.02, 0.2, 1.0},
@@ -56,12 +63,12 @@ TEST_CASE("validateInputs returns error. Incorrect ModelParameters ",
 
     SimulationParameters simParams{.nPaths = 10, .nSteps = 10};
 
-    REQUIRE_THROWS_AS(McEngine(modelParams, simParams), std::invalid_argument);
+    REQUIRE_THROWS_AS(McEngine<VanillaEuropeanOption>(modelParams, simParams),
+                      std::invalid_argument);
 }
 
 TEST_CASE("price returns correct. Fixed seed. Zero volatility",
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -76,10 +83,12 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEng = McEngine{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEng{modelParams, simParams};
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
+
+    vanillaOption.setPricingEngine(&mcEng);
 
     double deterministicDiscountFactor =
         std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears);
@@ -90,7 +99,7 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
                      modelParams.timeHorizonInYears) -
         optionParamsCall.strike;
 
-    REQUIRE(mcEng.price(vanillaOption) ==
+    REQUIRE(vanillaOption.price() ==
             Catch::Approx(payoffAtMaturity * deterministicDiscountFactor)
                 .epsilon(1e-10));
 }
@@ -98,7 +107,6 @@ TEST_CASE("price returns correct. Fixed seed. Zero volatility",
 TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
           "Vanilla European Option - Fixed seed. Positive volatility",
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -114,16 +122,19 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEng = McEngine{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEng{modelParams, simParams};
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
 
-    double mcPrice = mcEng.price(vanillaOption);
+    vanillaOption.setPricingEngine(&mcEng);
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    double mcPrice = vanillaOption.price();
 
-    double bsPrice = bsCloseForm.price(vanillaOption);
+    BsCloseForm<VanillaEuropeanOption> bsCloseForm{modelParams};
+
+    vanillaOption.setPricingEngine(&bsCloseForm);
+    double bsPrice = vanillaOption.price();
 
     REQUIRE(mcPrice ==
             Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
@@ -147,16 +158,20 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEng = McEngine{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEng{modelParams, simParams};
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
 
-    double mcPrice = mcEng.price(vanillaOption);
+    vanillaOption.setPricingEngine(&mcEng);
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    double mcPrice = vanillaOption.price();
 
-    double bsPrice = bsCloseForm.price(vanillaOption);
+    BsCloseForm<VanillaEuropeanOption> bsCloseForm{modelParams};
+
+    vanillaOption.setPricingEngine(&bsCloseForm);
+
+    double bsPrice = vanillaOption.price();
 
     REQUIRE(mcPrice ==
             Catch::Approx(bsPrice).epsilon(0.01)); // 1% relative difference
@@ -165,7 +180,6 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
 TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
           "reduction . No Seed. Positive volatility",
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -184,8 +198,8 @@ TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEng = McEngine{modelParams, simParams};
-    McEngine mcEngVarRed = McEngine{modelParams, simParamsVarRed};
+    McEngine<VanillaEuropeanOption> mcEng{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEngVarRed{modelParams, simParamsVarRed};
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
@@ -195,8 +209,11 @@ TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
     std::vector<double> mcPricesVarianceReduction(runs);
 
     for (int i = 0; i < runs; i++) {
-        mcPrices[i] = mcEng.price(vanillaOption);
-        mcPricesVarianceReduction[i] = mcEngVarRed.price(vanillaOption);
+        vanillaOption.setPricingEngine(&mcEng);
+        mcPrices[i] = vanillaOption.price();
+
+        vanillaOption.setPricingEngine(&mcEngVarRed);
+        mcPricesVarianceReduction[i] = vanillaOption.price();
     }
 
     REQUIRE(sampleStandardDeviation(mcPrices) >
@@ -206,7 +223,6 @@ TEST_CASE("SimulateGbmPath with/without Antithetic variates - variance "
 TEST_CASE("SimulateGbmPath with Antithetic Variates returns price within 1 "
           "percent vs Black Scholes"
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -225,20 +241,23 @@ TEST_CASE("SimulateGbmPath with Antithetic Variates returns price within 1 "
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEngVarRed = McEngine{modelParams, simParamsVarRed};
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    McEngine<VanillaEuropeanOption> mcEngVarRed{modelParams, simParamsVarRed};
+    BsCloseForm<VanillaEuropeanOption> bsCloseForm{modelParams};
 
     VanillaEuropeanOption vanillaOption =
         VanillaEuropeanOption{optionParamsCall};
 
-    REQUIRE(mcEngVarRed.price(vanillaOption) ==
-            Catch::Approx(bsCloseForm.price(vanillaOption)).epsilon(0.01));
+    vanillaOption.setPricingEngine(&mcEngVarRed);
+    double mcPrice = vanillaOption.price();
+    vanillaOption.setPricingEngine(&bsCloseForm);
+    double bsPrice = vanillaOption.price();
+
+    REQUIRE(mcPrice == Catch::Approx(bsPrice).epsilon(0.01));
 }
 
 TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
           "Digital European Option - Fixed seed. Positive volatility",
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -261,20 +280,25 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::AssetOrNothing};
 
-    McEngine mcEng = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEng{modelParams, simParams};
 
     DigitalEuropeanOption vanillaOptionCoN =
         DigitalEuropeanOption{optionParamsCallCoN};
+    vanillaOptionCoN.setPricingEngine(&mcEng);
+
     DigitalEuropeanOption vanillaOptionAoN =
         DigitalEuropeanOption{optionParamsCallAoN};
+    vanillaOptionAoN.setPricingEngine(&mcEng);
 
-    double mcPriceAoN = mcEng.price(vanillaOptionAoN);
-    double mcPriceCoN = mcEng.price(vanillaOptionCoN);
+    double mcPriceAoN = vanillaOptionAoN.price();
+    double mcPriceCoN = vanillaOptionCoN.price();
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    BsCloseForm<DigitalEuropeanOption> bsCloseForm{modelParams};
+    vanillaOptionAoN.setPricingEngine(&bsCloseForm);
+    vanillaOptionCoN.setPricingEngine(&bsCloseForm);
 
-    double bsPriceAoN = bsCloseForm.price(vanillaOptionAoN);
-    double bsPriceCoN = bsCloseForm.price(vanillaOptionCoN);
+    double bsPriceAoN = vanillaOptionAoN.price();
+    double bsPriceCoN = vanillaOptionCoN.price();
 
     REQUIRE(mcPriceAoN ==
             Catch::Approx(bsPriceAoN).epsilon(0.01)); // 1% relative difference
@@ -285,7 +309,6 @@ TEST_CASE("simulateGbmPath returns price within 1 percent vs Black Scholes"
 TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
           "Digital European Option - No Seed. Positive volatility",
           "[monteCarloEngine]") {
-
     ModelParameters modelParams{.underlyingPrice = 100.0,
                                 .interestRate = 0.02,
                                 .dividendRate = 0.05,
@@ -307,20 +330,25 @@ TEST_CASE("SimulateGbmPath returns price within 1 percent vs Black Scholes"
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::AssetOrNothing};
 
-    McEngine mcEng = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEng{modelParams, simParams};
 
     DigitalEuropeanOption vanillaOptionCoN =
         DigitalEuropeanOption{optionParamsCallCoN};
+    vanillaOptionCoN.setPricingEngine(&mcEng);
+
     DigitalEuropeanOption vanillaOptionAoN =
         DigitalEuropeanOption{optionParamsCallAoN};
+    vanillaOptionAoN.setPricingEngine(&mcEng);
 
-    double mcPriceAoN = mcEng.price(vanillaOptionAoN);
-    double mcPriceCoN = mcEng.price(vanillaOptionCoN);
+    double mcPriceAoN = vanillaOptionAoN.price();
+    double mcPriceCoN = vanillaOptionCoN.price();
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    BsCloseForm<DigitalEuropeanOption> bsCloseForm{modelParams};
+    vanillaOptionAoN.setPricingEngine(&bsCloseForm);
+    vanillaOptionCoN.setPricingEngine(&bsCloseForm);
 
-    double bsPriceAoN = bsCloseForm.price(vanillaOptionAoN);
-    double bsPriceCoN = bsCloseForm.price(vanillaOptionCoN);
+    double bsPriceAoN = vanillaOptionAoN.price();
+    double bsPriceCoN = vanillaOptionCoN.price();
 
     REQUIRE(mcPriceAoN ==
             Catch::Approx(bsPriceAoN).epsilon(0.01)); // 1% relative difference

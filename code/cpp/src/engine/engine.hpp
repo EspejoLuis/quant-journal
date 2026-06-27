@@ -1,10 +1,15 @@
 #pragma once
-#include "instrument.hpp"
 
-// How to price
 class Engine {
 
   public:
-    virtual double price(const Instrument& instrument) = 0;
+    struct Arguments {
+        virtual ~Arguments() = default;
+    };
+    virtual Arguments* getArguments() = 0;
+
+    virtual void calculate() = 0;
+    virtual double getResult() const = 0;
+
     virtual ~Engine() = default;
 };

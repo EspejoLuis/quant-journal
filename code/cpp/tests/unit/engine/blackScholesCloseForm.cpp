@@ -20,7 +20,8 @@ TEST_CASE("validateInputs returns errors. Incorrect ModelParameters",
                                 .volatility = sigma,
                                 .timeHorizonInYears = T};
 
-    REQUIRE_THROWS_AS(BsCloseForm(modelParams), std::invalid_argument);
+    REQUIRE_THROWS_AS(BsCloseForm<VanillaEuropeanOption>(modelParams),
+                      std::invalid_argument);
 }
 
 TEST_CASE("price returns correct. Vanilla European Option - Call (Long/Short)",
@@ -64,16 +65,20 @@ TEST_CASE("price returns correct. Vanilla European Option - Call (Long/Short)",
                                         modelParams.timeHorizonInYears) *
                                normalCdf(d2);
 
-    double bsPriceLong = BsCloseForm{modelParams}.price(
-        VanillaEuropeanOption{optionParamsCallLong});
+    BsCloseForm<VanillaEuropeanOption> bsCloseForm{modelParams};
+
+    VanillaEuropeanOption call{optionParamsCallLong};
+    call.setPricingEngine(&bsCloseForm);
+
     double expectedPriceLong = unsignedPrice;
 
-    double bsPriceShort = BsCloseForm{modelParams}.price(
-        VanillaEuropeanOption{optionParamsCallShort});
+    VanillaEuropeanOption put{optionParamsCallShort};
+    put.setPricingEngine(&bsCloseForm);
+
     double expectedPriceShort = -unsignedPrice;
 
-    CHECK(bsPriceLong == Catch::Approx(expectedPriceLong).epsilon(0.01));
-    CHECK(bsPriceShort == Catch::Approx(expectedPriceShort).epsilon(0.01));
+    CHECK(call.price() == Catch::Approx(expectedPriceLong).epsilon(0.01));
+    CHECK(put.price() == Catch::Approx(expectedPriceShort).epsilon(0.01));
 }
 
 TEST_CASE("price returns correct. Vanilla European Option - Put (Long/Short)",
@@ -117,16 +122,20 @@ TEST_CASE("price returns correct. Vanilla European Option - Put (Long/Short)",
                                         modelParams.timeHorizonInYears) *
                                normalCdf(-d2);
 
-    double bsPriceLong = BsCloseForm{modelParams}.price(
-        VanillaEuropeanOption{optionParamsCallLong});
+    BsCloseForm<VanillaEuropeanOption> bsCloseForm{modelParams};
+
+    VanillaEuropeanOption call{optionParamsCallLong};
+    call.setPricingEngine(&bsCloseForm);
+
     double expectedPriceLong = unsignedPrice;
 
-    double bsPriceShort = BsCloseForm{modelParams}.price(
-        VanillaEuropeanOption{optionParamsCallShort});
+    VanillaEuropeanOption put{optionParamsCallShort};
+    put.setPricingEngine(&bsCloseForm);
+
     double expectedPriceShort = -unsignedPrice;
 
-    CHECK(bsPriceLong == Catch::Approx(expectedPriceLong).epsilon(0.01));
-    CHECK(bsPriceShort == Catch::Approx(expectedPriceShort).epsilon(0.01));
+    CHECK(call.price() == Catch::Approx(expectedPriceLong).epsilon(0.01));
+    CHECK(put.price() == Catch::Approx(expectedPriceShort).epsilon(0.01));
 }
 
 TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
@@ -190,19 +199,24 @@ TEST_CASE("price returns correct. Digital European Option - Call (Long/Short)",
         std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(d2);
 
-    double bsPriceLongCoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallLongCoN});
-    double bsPriceShortCoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallShortCoN});
-    double bsPriceLongAoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallLongAoN});
-    double bsPriceShortAoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallShortAoN});
+    BsCloseForm<DigitalEuropeanOption> bsCloseForm{modelParams};
 
-    CHECK(bsPriceLongCoN == Catch::Approx(unsignedPriceCoN).epsilon(0.01));
-    CHECK(bsPriceShortCoN == Catch::Approx(-unsignedPriceCoN).epsilon(0.01));
-    CHECK(bsPriceLongAoN == Catch::Approx(unsignedPriceAoN).epsilon(0.01));
-    CHECK(bsPriceShortAoN == Catch::Approx(-unsignedPriceAoN).epsilon(0.01));
+    DigitalEuropeanOption longCoN{optionParamsCallLongCoN};
+    longCoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption shortCoN{optionParamsCallShortCoN};
+    shortCoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption longAoN{optionParamsCallLongAoN};
+    longAoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption shortAoN{optionParamsCallShortAoN};
+    shortAoN.setPricingEngine(&bsCloseForm);
+
+    CHECK(longCoN.price() == Catch::Approx(unsignedPriceCoN).epsilon(0.01));
+    CHECK(shortCoN.price() == Catch::Approx(-unsignedPriceCoN).epsilon(0.01));
+    CHECK(longAoN.price() == Catch::Approx(unsignedPriceAoN).epsilon(0.01));
+    CHECK(shortAoN.price() == Catch::Approx(-unsignedPriceAoN).epsilon(0.01));
 }
 
 TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
@@ -215,14 +229,14 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
                                 .timeHorizonInYears = 1.0};
 
     const double strike = 90;
-    DigitalOptionParameters optionParamsCallLongAoN{
+    DigitalOptionParameters optionParamsPutLongAoN{
         .strike = strike,
         .type = OptionType::Put,
         .direction = OptionDirection::Long,
         .digitalType = DigitalType::AssetOrNothing,
     };
 
-    DigitalOptionParameters optionParamsCallShortAoN{
+    DigitalOptionParameters optionParamsPutShortAoN{
         .strike = strike,
         .type = OptionType::Put,
         .direction = OptionDirection::Short,
@@ -230,7 +244,7 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
     };
 
     const double payAmount = 100;
-    DigitalOptionParameters optionParamsCallLongCoN{
+    DigitalOptionParameters optionParamsPutLongCoN{
         .strike = strike,
         .type = OptionType::Put,
         .direction = OptionDirection::Long,
@@ -238,7 +252,7 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         .payAmount = payAmount,
     };
 
-    DigitalOptionParameters optionParamsCallShortCoN{
+    DigitalOptionParameters optionParamsPutShortCoN{
         .strike = strike,
         .type = OptionType::Put,
         .direction = OptionDirection::Short,
@@ -266,17 +280,22 @@ TEST_CASE("price returns correct. Digital European Option - Put (Long/Short)",
         std::exp(-modelParams.interestRate * modelParams.timeHorizonInYears) *
         normalCdf(-d2);
 
-    double bsPriceLongCoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallLongCoN});
-    double bsPriceShortCoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallShortCoN});
-    double bsPriceLongAoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallLongAoN});
-    double bsPriceShortAoN = BsCloseForm{modelParams}.price(
-        DigitalEuropeanOption{optionParamsCallShortAoN});
+    BsCloseForm<DigitalEuropeanOption> bsCloseForm{modelParams};
 
-    CHECK(bsPriceLongCoN == Catch::Approx(unsignedPriceCoN).epsilon(0.01));
-    CHECK(bsPriceShortCoN == Catch::Approx(-unsignedPriceCoN).epsilon(0.01));
-    CHECK(bsPriceLongAoN == Catch::Approx(unsignedPriceAoN).epsilon(0.01));
-    CHECK(bsPriceShortAoN == Catch::Approx(-unsignedPriceAoN).epsilon(0.01));
+    DigitalEuropeanOption longCoN{optionParamsPutLongCoN};
+    longCoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption shortCoN{optionParamsPutShortCoN};
+    shortCoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption longAoN{optionParamsPutLongAoN};
+    longAoN.setPricingEngine(&bsCloseForm);
+
+    DigitalEuropeanOption shortAoN{optionParamsPutShortAoN};
+    shortAoN.setPricingEngine(&bsCloseForm);
+
+    CHECK(longCoN.price() == Catch::Approx(unsignedPriceCoN).epsilon(0.01));
+    CHECK(shortCoN.price() == Catch::Approx(-unsignedPriceCoN).epsilon(0.01));
+    CHECK(longAoN.price() == Catch::Approx(unsignedPriceAoN).epsilon(0.01));
+    CHECK(shortAoN.price() == Catch::Approx(-unsignedPriceAoN).epsilon(0.01));
 }

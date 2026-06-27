@@ -1,26 +1,35 @@
 #include "chooserEuropeanOption.hpp"
 
 ChooserEuropeanOption::ChooserEuropeanOption(
-    const ChooserOptionParameters& optParams)
-    : optParams_(optParams) {
+    const ChooserOptionParameters& params)
+    : params_(params) {
 
     validateInputs();
 };
 
-const ChooserOptionParameters& ChooserEuropeanOption::parameters() const {
-    return optParams_;
-};
-
 void ChooserEuropeanOption::validateInputs() const {
 
-    if (optParams_.maturity <= 0)
+    if (params_.maturity <= 0)
         throw std::invalid_argument(
             "choice date in years cannot be negative or zero");
 
-    if (optParams_.strike < 0)
+    if (params_.strike < 0)
         throw std::invalid_argument("strike cannot be negative");
 
-    if (optParams_.direction != OptionDirection::Short &&
-        optParams_.direction != OptionDirection::Long)
+    if (params_.direction != OptionDirection::Short &&
+        params_.direction != OptionDirection::Long)
         throw std::invalid_argument("invalid OptionDirection");
+};
+
+void ChooserEuropeanOption::setArguments(Engine::Arguments* args) const {
+    if (!args)
+        throw std::logic_error("This is not the right engine");
+
+    ChooserEuropeanOption::Arguments* engineArgs =
+        dynamic_cast<ChooserEuropeanOption::Arguments*>(args);
+
+    if (!engineArgs)
+        throw std::logic_error("This is not the right engine");
+
+    engineArgs->engineParams = params_;
 };

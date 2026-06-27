@@ -7,12 +7,15 @@ class DigitalEuropeanOption : public Instrument {
   public:
     DigitalEuropeanOption(const DigitalOptionParameters& optParams);
 
-    double payoff(const std::vector<double>& path) const override;
+    struct Arguments : Engine::Arguments {
 
-    const DigitalOptionParameters& parameters() const;
+        DigitalOptionParameters engineParams;
+        double payoff(const double underlying) const;
+    };
 
   private:
-    const DigitalOptionParameters optParams_;
+    const DigitalOptionParameters params_;
 
+    void setArguments(Engine::Arguments*) const override;
     void validateInputs() const;
 };

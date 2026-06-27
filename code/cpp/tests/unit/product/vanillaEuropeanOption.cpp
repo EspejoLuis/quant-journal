@@ -28,14 +28,17 @@ TEST_CASE("VanillaEuropeanOption returns correct. Long Put-Call parity",
         .direction = OptionDirection::Long,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEngine{modelParams, simParams};
 
     VanillaEuropeanOption vanillaCall = VanillaEuropeanOption{optionParamsCall};
+    vanillaCall.setPricingEngine(&mcEngine);
+
     VanillaEuropeanOption vanillaPut = VanillaEuropeanOption{optionParamsPut};
+    vanillaPut.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(vanillaCall);
+    double callPrice = vanillaCall.price();
 
-    double putPrice = mcEngine.price(vanillaPut);
+    double putPrice = vanillaPut.price();
 
     REQUIRE(callPrice - putPrice ==
             Catch::Approx(modelParams.underlyingPrice *
@@ -70,14 +73,17 @@ TEST_CASE("VanillaEuropeanOption returns correct. Short Put-Call parity.",
         .direction = OptionDirection::Short,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<VanillaEuropeanOption> mcEngine{modelParams, simParams};
 
     VanillaEuropeanOption vanillaCall = VanillaEuropeanOption{optionParamsCall};
+    vanillaCall.setPricingEngine(&mcEngine);
+
     VanillaEuropeanOption vanillaPut = VanillaEuropeanOption{optionParamsPut};
+    vanillaPut.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(vanillaCall);
+    double callPrice = vanillaCall.price();
 
-    double putPrice = mcEngine.price(vanillaPut);
+    double putPrice = vanillaPut.price();
 
     REQUIRE(callPrice - putPrice ==
             -Catch::Approx(modelParams.underlyingPrice *

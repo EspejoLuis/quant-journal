@@ -2,21 +2,19 @@
 #include "instrument.hpp"
 #include "optionParameters.hpp"
 
-struct ChooserOptionParameters {
-    double strike;
-    double maturity;
-    OptionDirection direction;
-};
-
 class ChooserEuropeanOption : public Instrument {
 
   public:
-    ChooserEuropeanOption(const ChooserOptionParameters& optParams);
+    ChooserEuropeanOption(const ChooserOptionParameters& params);
 
-    const ChooserOptionParameters& parameters() const;
+    struct Arguments : Engine::Arguments {
+
+        ChooserOptionParameters engineParams;
+    };
 
   private:
-    const ChooserOptionParameters optParams_;
+    const ChooserOptionParameters params_;
 
+    void setArguments(Engine::Arguments*) const override;
     void validateInputs() const;
 };

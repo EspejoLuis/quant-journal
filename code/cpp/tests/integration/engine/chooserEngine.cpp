@@ -18,16 +18,20 @@ TEST_CASE("Price returns correct - Long", "[ChooserEngine]") {
         .direction = OptionDirection::Long,
     };
 
-    ChooserEngine chooserEng = ChooserEngine{modelParams, simParams};
+    ChooserEngine chooserEng{modelParams, simParams};
 
     ChooserEuropeanOption chooserEuropeanOption =
         ChooserEuropeanOption{optionParams};
 
-    double mcAndBsPrice = chooserEng.price(chooserEuropeanOption);
+    chooserEuropeanOption.setPricingEngine(&chooserEng);
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    double mcAndBsPrice = chooserEuropeanOption.price();
 
-    double bsPrice = bsCloseForm.price(chooserEuropeanOption);
+    BsCloseForm<ChooserEuropeanOption> bsCloseForm{modelParams};
+
+    chooserEuropeanOption.setPricingEngine(&bsCloseForm);
+
+    double bsPrice = chooserEuropeanOption.price();
 
     REQUIRE(mcAndBsPrice == Catch::Approx(bsPrice).epsilon(0.01));
 };
@@ -48,16 +52,19 @@ TEST_CASE("Price returns correct - Short", "[ChooserEngine]") {
         .direction = OptionDirection::Short,
     };
 
-    ChooserEngine chooserEng = ChooserEngine{modelParams, simParams};
+    ChooserEngine chooserEng{modelParams, simParams};
 
     ChooserEuropeanOption chooserEuropeanOption =
         ChooserEuropeanOption{optionParams};
 
-    double mcAndBsPrice = chooserEng.price(chooserEuropeanOption);
+    chooserEuropeanOption.setPricingEngine(&chooserEng);
 
-    BsCloseForm bsCloseForm = BsCloseForm{modelParams};
+    double mcAndBsPrice = chooserEuropeanOption.price();
 
-    double bsPrice = bsCloseForm.price(chooserEuropeanOption);
+    BsCloseForm<ChooserEuropeanOption> bsCloseForm{modelParams};
+    chooserEuropeanOption.setPricingEngine(&bsCloseForm);
+
+    double bsPrice = chooserEuropeanOption.price();
 
     REQUIRE(mcAndBsPrice == Catch::Approx(bsPrice).epsilon(0.01));
 };

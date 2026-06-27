@@ -5,14 +5,16 @@
 class VanillaEuropeanOption : public Instrument {
 
   public:
-    VanillaEuropeanOption(const OptionParameters& optParams);
+    VanillaEuropeanOption(const OptionParameters& params);
 
-    double payoff(const std::vector<double>& path) const override;
-
-    const OptionParameters& parameters() const;
+    struct Arguments : Engine::Arguments {
+        OptionParameters engineParams;
+        double payoff(double underlying) const;
+    };
 
   private:
-    const OptionParameters optParams_;
+    const OptionParameters params_;
 
+    void setArguments(Engine::Arguments*) const override;
     void validateInputs() const;
 };

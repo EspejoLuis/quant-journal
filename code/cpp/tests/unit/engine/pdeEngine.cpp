@@ -1,4 +1,5 @@
 #include "pdeEngine.hpp"
+#include "vanillaEuropeanOption.hpp"
 #include <catch2/catch_all.hpp>
 #include <stdexcept>
 
@@ -24,7 +25,8 @@ TEST_CASE("validateInputs returns errors. Incorrect ModelParameters",
                             .grid = PdeGrid::Log,
                             .scheme = PdeScheme::Explicit};
 
-    REQUIRE_THROWS_AS(PdeEngine(modelParams, pdeParams), std::invalid_argument);
+    REQUIRE_THROWS_AS(PdeEngine<VanillaEuropeanOption>(modelParams, pdeParams),
+                      std::invalid_argument);
 }
 
 TEST_CASE("validateInputs returns errors. Incorrect PdeParameters",
@@ -48,5 +50,6 @@ TEST_CASE("validateInputs returns errors. Incorrect PdeParameters",
     PdeParameters pdeParams{
         .nSpaceSteps = s, .nTimeSteps = t, .grid = grid, .scheme = scheme};
 
-    REQUIRE_THROWS_AS(PdeEngine(modelParams, pdeParams), std::invalid_argument);
+    REQUIRE_THROWS_AS(PdeEngine<VanillaEuropeanOption>(modelParams, pdeParams),
+                      std::invalid_argument);
 }

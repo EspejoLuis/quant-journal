@@ -31,13 +31,16 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Asset "
         .digitalType = DigitalType::AssetOrNothing,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEngine{modelParams, simParams};
 
     DigitalEuropeanOption digitalCall = DigitalEuropeanOption{optionParamsCall};
-    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalCall.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(digitalCall);
-    double putPrice = mcEngine.price(digitalPut);
+    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalPut.setPricingEngine(&mcEngine);
+
+    double callPrice = digitalCall.price();
+    double putPrice = digitalPut.price();
     /*
     Put-Call parity: only P + C has same value regardless of state
     Asset or nothing:
@@ -84,13 +87,16 @@ TEST_CASE(
         .digitalType = DigitalType::AssetOrNothing,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEngine{modelParams, simParams};
 
     DigitalEuropeanOption digitalCall = DigitalEuropeanOption{optionParamsCall};
-    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalCall.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(digitalCall);
-    double putPrice = mcEngine.price(digitalPut);
+    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalPut.setPricingEngine(&mcEngine);
+
+    double callPrice = digitalCall.price();
+    double putPrice = digitalPut.price();
     /*
     Put-Call parity: only P + C has same value regardless of state
     Asset or nothing:
@@ -139,13 +145,16 @@ TEST_CASE("DigitalEuropeanOption returns correct. Long Put-Call parity - Cash "
         .payAmount = payAmount,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEngine{modelParams, simParams};
 
     DigitalEuropeanOption digitalCall = DigitalEuropeanOption{optionParamsCall};
-    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalCall.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(digitalCall);
-    double putPrice = mcEngine.price(digitalPut);
+    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalPut.setPricingEngine(&mcEngine);
+
+    double callPrice = digitalCall.price();
+    double putPrice = digitalPut.price();
     /*
     Put-Call parity: only P + C has same value regardless of state
     Cash or nothing:
@@ -193,13 +202,16 @@ TEST_CASE("DigitalEuropeanOption returns correct. Short Put-Call parity - Cash "
         .payAmount = payAmount,
     };
 
-    McEngine mcEngine = McEngine{modelParams, simParams};
+    McEngine<DigitalEuropeanOption> mcEngine{modelParams, simParams};
 
     DigitalEuropeanOption digitalCall = DigitalEuropeanOption{optionParamsCall};
-    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalCall.setPricingEngine(&mcEngine);
 
-    double callPrice = mcEngine.price(digitalCall);
-    double putPrice = mcEngine.price(digitalPut);
+    DigitalEuropeanOption digitalPut = DigitalEuropeanOption{optionParamsPut};
+    digitalPut.setPricingEngine(&mcEngine);
+
+    double callPrice = digitalCall.price();
+    double putPrice = digitalPut.price();
     /*
     Put-Call parity: only P + C has same value regardless of state
     Asset or nothing:
