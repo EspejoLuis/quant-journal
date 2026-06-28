@@ -1,5 +1,6 @@
 #include "digitalEuropeanOption.hpp"
 #include "monteCarloEngine.hpp"
+#include "vanillaEuropeanOption.hpp"
 #include <catch2/catch_all.hpp>
 #include <numeric>
 #include <stdexcept>
@@ -329,4 +330,31 @@ TEST_CASE("DigitalEuropeanOption returns error. invalid payAmount",
 
     REQUIRE_THROWS_AS(DigitalEuropeanOption{optionParamsCall},
                       std::invalid_argument);
+}
+
+TEST_CASE("DigitalEuropeanOption returns error - wrong engine type",
+          "[DigitalEuropeanOption]") {
+
+    DigitalOptionParameters optionParamsCall{.strike = 10,
+                                             .type = OptionType::Call,
+                                             .direction = OptionDirection::Long,
+                                             .digitalType =
+                                                 DigitalType::CashOrNothing,
+                                             .payAmount = 9};
+
+    DigitalEuropeanOption opt{optionParamsCall};
+
+    ModelParameters modelParams{.underlyingPrice = 100.0,
+                                .interestRate = 0.02,
+                                .dividendRate = 0.05,
+                                .volatility = 0.0,
+                                .timeHorizonInYears = 1.0};
+
+    SimulationParameters simParams{.nPaths = 100'000, .nSteps = 10, .seed = 42};
+
+    McEngine<VanillaEuropeanOption> mcEngine{modelParams, simParams};
+
+    opt.setPricingEngine(&mcEngine);
+
+    REQUIRE_THROWS_AS(opt.price(), std::logic_error);
 }

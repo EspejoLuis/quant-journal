@@ -5,14 +5,26 @@
 #include <catch2/catch_all.hpp>
 
 TEST_CASE("Instrument returns error - null ptr engine", "[Instrument]") {
-    Instrument instrument;
-    REQUIRE_THROWS_AS(instrument.setPricingEngine(nullptr),
-                      std::invalid_argument);
+    OptionParameters optionParamsCall{
+        .strike = 10,
+        .type = OptionType::Call,
+        .direction = OptionDirection::Long,
+    };
+    VanillaEuropeanOption opt{optionParamsCall};
+
+    REQUIRE_THROWS_AS(opt.setPricingEngine(nullptr), std::invalid_argument);
 }
 
 TEST_CASE("Instrument returns error - price with no engine", "[Instrument]") {
-    Instrument instrument;
-    REQUIRE_THROWS_AS(instrument.price(), std::logic_error);
+    OptionParameters optionParamsCall{
+        .strike = 10,
+        .type = OptionType::Call,
+        .direction = OptionDirection::Long,
+    };
+
+    VanillaEuropeanOption opt{optionParamsCall};
+
+    REQUIRE_THROWS_AS(opt.price(), std::logic_error);
 }
 
 TEST_CASE("Instrument returns error - wrong engine type", "[Instrument]") {

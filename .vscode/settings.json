@@ -76,6 +76,10 @@
       "pattern": "${workspaceFolder}/code/cpp/build/instrumentUnit"
     },
     {
+      "name": "Common: Vector Utils",
+      "pattern": "${workspaceFolder}/code/cpp/build/vectorUtilsUnit"
+    },
+    {
       "name": "Engine: PDE Engine",
       "pattern": "${workspaceFolder}/code/cpp/build/pdeEngineUnit"
     },

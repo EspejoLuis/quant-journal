@@ -16,11 +16,9 @@ if [ "$1" == "--clean" ]; then
     rm -rf "$SRC_DIR/build-coverage"
 fi
 
-# 2. Configure (only if folder doesn't exist or was cleaned)
-if [ ! -d "$SRC_DIR/build-coverage" ]; then
-    echo "Configuring build with coverage instrumentation..."
-    cmake -S "$SRC_DIR" -B "$SRC_DIR/build-coverage" -DCMAKE_BUILD_TYPE=Coverage
-fi
+# 2. Configure (always run — idempotent, picks up CMakeLists.txt changes)
+echo "Configuring build with coverage instrumentation..."
+cmake -S "$SRC_DIR" -B "$SRC_DIR/build-coverage" -DCMAKE_BUILD_TYPE=Coverage
 
 # 3. Build
 echo "Building project..."

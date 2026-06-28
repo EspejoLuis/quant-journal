@@ -66,6 +66,14 @@
             "cwd": "${workspaceFolder}"
         },
         {
+            "name": "Debug vectorUtilsUnit",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/code/cpp/build/vectorUtilsUnit",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
             "name": "Debug pdeEngineUnit",
             "type": "lldb",
             "request": "launch",

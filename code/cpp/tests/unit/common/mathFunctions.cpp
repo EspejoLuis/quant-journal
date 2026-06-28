@@ -61,6 +61,10 @@ TEST_CASE("interpolationLinear") {
         Catch::Approx(interpolationLinear(x, x0, x1, y0, y1)).epsilon(1e-10));
 }
 
-TEST_CASE("interpolationLinear: out of range") {
+TEST_CASE("interpolationLinear: out of range - lower bound") {
     REQUIRE_THROWS_AS(interpolationLinear(-2, 1, 3, 4, 5), std::out_of_range);
+}
+
+TEST_CASE("interpolationLinear: out of range - upper bound") {
+    REQUIRE_THROWS_AS(interpolationLinear(4, 1, 3, 4, 5), std::out_of_range);
 }
