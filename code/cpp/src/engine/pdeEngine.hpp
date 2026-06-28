@@ -211,8 +211,8 @@ template <typename T> class PdeEngine : public Engine {
             std::swap(valuesCurrent, valuesNext);
         }
 
-        const ptrdiff_t idx =
-            findClosestIndex(grid_.spaceGrid, modelParams_.underlyingPrice);
+        const ptrdiff_t idx = upperBracketIndexInSorted(
+            grid_.spaceGrid, modelParams_.underlyingPrice);
 
         return interpolationLinear(
             modelParams_.underlyingPrice, grid_.spaceGrid[idx - 1],
