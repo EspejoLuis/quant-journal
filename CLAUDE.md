@@ -103,7 +103,7 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 #### Interfaces (I)
 
 - **I.2** — No non-`const` global variables. All shared state must be passed explicitly or owned by a class.
-- **I.5 / I.6** — State preconditions with `Expects()` or `assert`. Example: `assert(sigma > 0.0)` at the top of every path generator.
+- **I.5 / I.6** — State preconditions with `throw std::invalid_argument`. Example: `if (sigma < 0.0) throw std::invalid_argument("sigma cannot be negative")` at the top of every path generator.
 - **I.11** — Never transfer ownership via a raw pointer. Return by value or use `std::unique_ptr`.
 - **I.13** — Don't pass arrays as `double* arr, int n`. Use `std::span<double>` or `std::vector<double>&`.
 - **I.23** — Keep the number of function arguments low. Bundle related model parameters into a config struct:
@@ -131,7 +131,7 @@ NL.8 requires consistency; NL.9 requires `ALL_CAPS` for macros only. Both are me
 
 #### Error handling
 
-- The Core Guidelines recommend exceptions (I.10), but this codebase avoids them for predictability in numerical loops. Use `assert` / `Expects()` for preconditions. Document this at the top of each engine file.
+- Use `throw std::invalid_argument` for preconditions (consistent with QuantLib's `QL_REQUIRE` style). This applies everywhere: `validateInputs`, `setArguments`, free functions like `upperBracketIndexInSorted`. Do not use `assert` or `Expects()` — the codebase has standardised on exceptions.
 
 ### Testing
 
@@ -171,7 +171,7 @@ code/cpp/src/
 │   ├── simulationParameters.hpp ← SimulationParameters struct + VarianceReduction enum (header-only; shared by all MC engines)
 │   ├── pathGeneration.hpp       ← simulateGbmPath(), createRng() as free inline functions (header-only; stateless, reusable by any engine)
 │   ├── pdeParameters.hpp        ← PdeScheme enum (Explicit/Implicit/CrankNicolson), PdeGrid enum (Uniform/Log), PdeParameters struct, PdeCoefficients struct {a,b,c}, PdeGridParameters struct {spaceGrid,spaceMin,spaceMax,spaceDelta,timeDelta}
-│   └── vectorUtils.hpp          ← findClosestIndex(v, target) — lower_bound + distance, ptrdiff_t return; throws out_of_range if target outside grid
+│   └── vectorUtils.hpp          ← upperBracketIndexInSorted(v, target) — throws invalid_argument if grid unsorted; lower_bound + distance, ptrdiff_t return; throws out_of_range if target outside grid
 ├── engine/
 │   ├── engine.hpp               ← abstract base: forward-declares Instrument (no include); nested Engine::Arguments {virtual ~Arguments()}; pure virtuals calculate(), getArguments()→Arguments*, getResult()→double
 │   ├── monteCarloEngine.hpp     ← McEngine<T> template (header-only); stores ModelParameters + SimulationParameters; typename T::Arguments args_; calculate() calls args_.payoff(path.back()); getArguments() returns &args_
