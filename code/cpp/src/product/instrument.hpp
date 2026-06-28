@@ -11,8 +11,6 @@ class Instrument {
     virtual ~Instrument() = default;
 
   private:
-    virtual void setArguments(Engine::Arguments* arguments) const {
-        throw std::logic_error("setArguments is not set for this instrument");
-    };
+    virtual void setArguments(Engine::Arguments* arguments) const = 0;
     Engine* engine_ = nullptr;
 };
