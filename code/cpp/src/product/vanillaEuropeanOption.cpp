@@ -22,8 +22,6 @@ void VanillaEuropeanOption::validateInputs() const {
 };
 
 void VanillaEuropeanOption::setArguments(Engine::Arguments* args) const {
-    if (!args)
-        throw std::logic_error("This is not the right engine");
 
     VanillaEuropeanOption::Arguments* engineArgs =
         dynamic_cast<VanillaEuropeanOption::Arguments*>(args);

@@ -35,8 +35,6 @@ void DigitalEuropeanOption::validateInputs() const {
 };
 
 void DigitalEuropeanOption::setArguments(Engine::Arguments* args) const {
-    if (!args)
-        throw std::logic_error("This is not the right engine");
 
     DigitalEuropeanOption::Arguments* engineArgs =
         dynamic_cast<DigitalEuropeanOption::Arguments*>(args);
